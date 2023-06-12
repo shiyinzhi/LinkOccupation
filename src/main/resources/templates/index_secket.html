@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket 测试</title>
+    <script src="jquery.js"></script>
+</head>
+<body>
+    <script>
+        $(function () {
+            socket();
+        });
+
+        var ws;
+        function socket(){
+            // 接收服务端数据时触发事件
+            if(WebSocket){
+                //这个ip是服务器的ip.
+                // var ws = new WebSocket("ws://121.36.133.160:8080/wbs/websocket/" + sessionStorage.getItem('entId'))
+                ws = new WebSocket("ws://localhost:9999/wbs/websocket/dddd");
+                ws.onmessage = function (evt) {
+                    // 后台发送的消息会被这个事件监听.evt.msg是数据
+                    // var received_msg = JSON.parse(evt.data);
+                    // var msg = "自助终端编号:" + received_msg.zzzdbh + "<br>问题:" + received_msg.wtms;
+                    var msg = evt.data;
+                    alert(msg);
+                };
+            }
+        }
+
+        function sendMsg() {
+            ws.send($("#input_msg").val(),(res)=>{
+                //res为send的返回值（类似于response）
+                alert(res);
+            });
+        }
+    </script>
+
+    <input type="text" id="input_msg"><button type="button" onclick="sendMsg()">发送</button>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<script th:inline="javascript">
+    // var Aside_menu = [[${Aside_menu}]];
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]);
+        return null;
+    }
+    if(getQueryString("code") == null){
+        window.location.href='/tempOccupation/wechatinfo/pageaouth20?payid='+getQueryString("payid");
+    }
+</script>

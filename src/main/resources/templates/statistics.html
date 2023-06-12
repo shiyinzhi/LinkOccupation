@@ -1,0 +1,830 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+
+
+    <title>悦年华颐养中心</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <!-- VENDOR CSS -->
+
+    <script th:src="@{'/layui/echarts/echarts.js'}"></script>
+    <script th:src="@{'/layui/jquery.js'}"></script>
+    <script th:src="@{'/layui/layui.js'}"></script>
+    <script th:src="@{'/layui/myjs.js'}"></script>
+    <link th:href="@{'/layui/css/layui.css'}" rel="stylesheet" />
+    <link th:href="@{'/layui/css/admin.css'}" rel="stylesheet" />
+
+    <style>
+        .input_st{
+            border-left-width:0px;
+            border-top-width:0px;
+            border-right-width:0px;
+            border-bottom-width:2px
+        }
+    </style>
+    <script type="text/javascript">
+        function changeFrameHeight() {
+            var ifm = document.getElementById("mainFrame");
+
+        }
+        window.onresize = function () { changeFrameHeight(); }
+        $(function () { changeFrameHeight(); });
+    </script>
+
+
+    <script>
+        layui.use(['form', 'layedit', 'laydate'], function () {
+
+        });
+
+
+    </script>
+
+    <style>
+        .main_static{
+            left: 10px;
+            margin-top: -12px;
+            width: 20px;
+        }
+    </style>
+
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        ul, li {
+            list-style-type: none;
+        }
+        body {
+            font: 12px/180% Arial, Helvetica, sans-serif;
+        }
+        a {
+            color: #333;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #3366cc;
+            text-decoration: underline;
+        }
+        .demopage {
+            width: 730px;
+            margin: 0 auto;
+        }
+        .demopage h2 {
+            font-size: 14px;
+            margin: 20px 0;
+        }
+        /* scrollDiv */
+        .scrollDiv {
+            height: 100px;/* 必要元素 */
+            line-height: 25px;
+            /*border: #ccc 1px solid;*/
+            overflow: hidden;/* 必要元素 */
+        }
+        .scrollDiv li {
+            height: auto;
+            padding-left: 10px;
+        }
+        #s2, #s3 {
+            height: 100px;
+        }
+
+        .layuiadmin-card-text{
+            background-color: #f8f8f8;
+            color: #777;
+            padding: 12px;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="layui-fluid">
+
+        <table>
+            <tr>
+
+                <td>
+                    <div class="layui-form layui-form-pane" id="room_form" style="position: fixed;z-index: 9999;width: 100%;">
+                        <div class="layui-form-item" style="margin-bottom: 0px">
+                            <label class="layui-form-label" style="width: auto" >开始时间</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="start_time" id="start_time" autocomplete="off" class="layui-input">
+                            </div>
+
+                            <label class="layui-form-label" style="width: auto" >结束时间</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="end_time" id="end_time" autocomplete="off" class="layui-input">
+                            </div>
+
+                            <label class="layui-form-label" style="width: auto" >患者</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="custName" id="custName" value="" autocomplete="off" class="layui-input">
+                            </div>
+
+                            <div class="layui-input-inline" style="width: auto">
+                                <button class="layui-btn" onclick="js_showuser();">选择患者</button>
+                            </div>
+
+                            <div class="layui-input-inline" style="width: auto">
+                                <button class="layui-btn" id="btnq">搜索</button>
+                            </div>
+
+                            <div class="layui-input-inline" style="width: auto">
+                                <button class="layui-btn" onclick="clean_search()">重置</button>
+                            </div>
+
+                            <div class="layui-input-inline" style="width: auto">
+                                <button class="layui-btn" onclick="excel()">导出</button>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table><br><br>
+
+
+        <div class="layui-card">
+            <div class="layui-card-header">
+                生理数据统计
+
+            </div>
+            <div class="layui-card-body">
+                <div class="layui-row layui-col-space15">
+                    <div class="layui-col-md6">
+                        <div class="layui-card">
+                            <!--<div class="layui-card-header">在住长者年龄比例</div>-->
+                            <div class="layui-card-body">
+                                <div id="main" style="height:50%"></div>
+                                <script type="text/javascript" th:inline="javascript">
+                                    var weight = [[${weight}]];
+                                    var physweight = JSON.parse(weight);
+
+                                    // 路径配置
+                                    require.config({
+                                        paths: {
+                                            echarts: 'layui/echarts/'
+                                        }
+                                    });
+
+                                    // 使用
+                                    require(
+                                        [
+                                            'echarts',
+                                            'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                                        ],
+                                        function (ec) {
+                                            // 基于准备好的dom，初始化echarts图表
+                                            var myChart = ec.init(document.getElementById('main'));
+
+                                            option = physweight;
+
+                                            // 为echarts对象加载数据
+                                            myChart.setOption(option);
+
+                                            // parent.tools.close_load();
+                                        }
+                                    );
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-col-md6">
+                        <div class="layui-card">
+                            <!--<div class="layui-card-header">在院长者护理等级分布</div>-->
+                            <div class="layui-card-body">
+                                <div id="main1" style="height:50%"></div>
+                                <script type="text/javascript" th:inline="javascript">
+                                    var weightAdd = [[${weightAdd}]];
+                                    var physDataweightAdd = JSON.parse(weightAdd);
+
+                                    // 路径配置
+                                    require.config({
+                                        paths: {
+                                            echarts: 'layui/echarts/'
+                                        }
+                                    });
+
+                                    // 使用
+                                    require(
+                                        [
+                                            'echarts',
+                                            'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                                        ],
+                                        function (ec) {
+                                            // 基于准备好的dom，初始化echarts图表
+                                            var myChart = ec.init(document.getElementById('main1'));
+
+                                            option = physDataweightAdd;
+
+                                            // 为echarts对象加载数据
+                                            myChart.setOption(option);
+
+                                            // parent.tools.close_load();
+                                        }
+                                    );
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="layui-col-md6">
+                    <div class="layui-card">
+                        <!--<div class="layui-card-header">最近半年入住情况</div>-->
+                        <div class="layui-card-body">
+                            <div id="main2" style="height:50%;"></div>
+                            <script type="text/javascript" th:inline="javascript">
+                                var ssy = [[${ssy}]];
+                                var physDatassy = JSON.parse(ssy);
+
+                                // 路径配置
+                                require.config({
+                                    paths: {
+                                        echarts: 'layui/echarts/'
+                                    }
+                                });
+
+                                // 使用
+                                require(
+                                    [
+                                        'echarts',
+                                        'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                                    ],
+                                    function (ec) {
+                                        // 基于准备好的dom，初始化echarts图表
+                                        var myChart = ec.init(document.getElementById('main2'));
+
+                                        option = physDatassy;
+
+                                        // 为echarts对象加载数据
+                                        myChart.setOption(option);
+                                    }
+                                );
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md6">
+                    <div class="layui-card">
+                        <!--<div class="layui-card-header">最近半年入住情况</div>-->
+                        <div class="layui-card-body">
+                            <div id="main3" style="height:50%;"></div>
+                            <script type="text/javascript" th:inline="javascript">
+                                var szy = [[${szy}]];
+                                var physDataszy = JSON.parse(szy);
+
+                                // 路径配置
+                                require.config({
+                                    paths: {
+                                        echarts: 'layui/echarts/'
+                                    }
+                                });
+
+                                // 使用
+                                require(
+                                    [
+                                        'echarts',
+                                        'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                                    ],
+                                    function (ec) {
+                                        // 基于准备好的dom，初始化echarts图表
+                                        var myChart = ec.init(document.getElementById('main3'));
+
+                                        option = physDataszy;
+
+                                        // 为echarts对象加载数据
+                                        myChart.setOption(option);
+                                    }
+                                );
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-col-md6">
+                    <div class="layui-card">
+                        <!--<div class="layui-card-header">最近半年入住情况</div>-->
+                        <div class="layui-card-body">
+                            <div id="main4" style="height:50%;"></div>
+                            <script type="text/javascript" th:inline="javascript">
+                                var kfxt = [[${kfxt}]];
+                                var physDatakfxt = JSON.parse(kfxt);
+
+                                // 路径配置
+                                require.config({
+                                    paths: {
+                                        echarts: 'layui/echarts/'
+                                    }
+                                });
+
+                                // 使用
+                                require(
+                                    [
+                                        'echarts',
+                                        'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                                    ],
+                                    function (ec) {
+                                        // 基于准备好的dom，初始化echarts图表
+                                        var myChart = ec.init(document.getElementById('main4'));
+
+                                        option = physDatakfxt;
+
+                                        // 为echarts对象加载数据
+                                        myChart.setOption(option);
+                                    }
+                                );
+                            </script>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md6">
+                    <div class="layui-card">
+                        <!--<div class="layui-card-header">最近半年入住情况</div>-->
+                        <div class="layui-card-body">
+                            <div id="main5" style="height:50%;"></div>
+                            <script type="text/javascript" th:inline="javascript">
+                                var chxt = [[${chxt}]];
+                                var physDatachxt = JSON.parse(chxt);
+
+                                // 路径配置
+                                require.config({
+                                    paths: {
+                                        echarts: 'layui/echarts/'
+                                    }
+                                });
+
+                                // 使用
+                                require(
+                                    [
+                                        'echarts',
+                                        'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                                    ],
+                                    function (ec) {
+                                        // 基于准备好的dom，初始化echarts图表
+                                        var myChart = ec.init(document.getElementById('main5'));
+
+                                        option = physDatachxt;
+
+                                        // 为echarts对象加载数据
+                                        myChart.setOption(option);
+                                    }
+                                );
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script type="text/javascript" th:inline="javascript">
+        var loadindex;
+        $(document).on('click', '#btnq', function () {
+
+            loadstaticts();
+
+        });
+
+        function loadstaticts(){
+            //查询数据统计
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                async: false,
+                cache: false,
+                contentType: "application/json; charset=utf-8",
+                url: 'statisticsAjax',
+                data:JSON.stringify({'startTime': $("#start_time").val(),'endTime': $("#end_time").val(),'custUuid':custUuid,'custName':$("#custName").val()}),
+                success: function (result) {
+                    console.log(result.code=="0");
+                    if(result.code =="0"){
+                        // 路径配置
+                        require.config({
+                            paths: {
+                                echarts: 'layui/echarts/'
+                            }
+                        });
+
+                        //周统计
+                        require(
+                            [
+                                'echarts',
+                                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                            ],
+                            function (ec) {
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart = ec.init(document.getElementById('main'));
+
+                                option = JSON.parse(result.data[0].weight);
+
+                                // 为echarts对象加载数据
+                                myChart.setOption(option);
+
+                                // parent.tools.close_load();
+                            }
+                        );
+
+
+                        //年统计
+                        require(
+                            [
+                                'echarts',
+                                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                            ],
+                            function (ec) {
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart = ec.init(document.getElementById('main1'));
+
+                                option = JSON.parse(result.data[0].weightAdd);
+
+                                // 为echarts对象加载数据
+                                myChart.setOption(option);
+
+                                // parent.tools.close_load();
+                            }
+                        );
+
+                        //月统计
+                        require(
+                            [
+                                'echarts',
+                                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                            ],
+                            function (ec) {
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart = ec.init(document.getElementById('main2'));
+
+                                option = JSON.parse(result.data[0].ssy);
+
+                                // 为echarts对象加载数据
+                                myChart.setOption(option);
+
+                                // parent.tools.close_load();
+                            }
+                        );
+
+
+                        //月统计
+                        require(
+                            [
+                                'echarts',
+                                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                            ],
+                            function (ec) {
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart = ec.init(document.getElementById('main3'));
+
+                                option = JSON.parse(result.data[0].szy);
+
+                                // 为echarts对象加载数据
+                                myChart.setOption(option);
+
+                                // parent.tools.close_load();
+                            }
+                        );
+
+                        //月统计
+                        require(
+                            [
+                                'echarts',
+                                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                            ],
+                            function (ec) {
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart = ec.init(document.getElementById('main4'));
+
+                                option = JSON.parse(result.data[0].kfxt);
+
+                                // 为echarts对象加载数据
+                                myChart.setOption(option);
+
+                                // parent.tools.close_load();
+                            }
+                        );
+
+                        //月统计
+                        require(
+                            [
+                                'echarts',
+                                'echarts/chart/line' // 使用柱状图就加载bar模块，按需加载
+                            ],
+                            function (ec) {
+                                // 基于准备好的dom，初始化echarts图表
+                                var myChart = ec.init(document.getElementById('main5'));
+
+                                option = JSON.parse(result.data[0].chxt);
+
+                                // 为echarts对象加载数据
+                                myChart.setOption(option);
+
+                                // parent.tools.close_load();
+                            }
+                        );
+
+
+                    }else{
+                        layer.alert(result.desc);
+                    }
+                },
+                error: function(data) {
+                    layer.alert("error:"+data.responseText);
+                }
+
+            });
+        }
+    </script>
+
+    <script type="text/javascript">
+        (function($) {
+            $.fn.extend({
+                Scroll: function(opt, callback) {
+                    //参数初始化
+                    if (!opt) var opt = {};
+                    var _btnUp = $("#" + opt.up); //Shawphy:向上按钮
+                    var _btnDown = $("#" + opt.down); //Shawphy:向下按钮
+                    var timerID;
+                    var _this = this.eq(0).find("ul:first");
+                    var lineH = _this.find("li:first").height(), //获取行高
+                        line = opt.line ? parseInt(opt.line, 10) : parseInt(this.height() / lineH, 10), //每次滚动的行数，默认为一屏，即父容器高度
+                        speed = opt.speed ? parseInt(opt.speed, 10) : 500; //卷动速度，数值越大，速度越慢（毫秒）
+                    timer = opt.timer //?parseInt(opt.timer,10):3000; //滚动的时间间隔（毫秒）
+                    if (line == 0) line = 1;
+                    var upHeight = 0 - line * lineH;
+                    //滚动函数
+                    var scrollUp = function() {
+                        _btnUp.unbind("click", scrollUp); //Shawphy:取消向上按钮的函数绑定
+                        _this.animate({
+                            marginTop: upHeight
+                        }, speed, function() {
+                            for (i = 1; i <= line; i++) {
+                                _this.find("li:first").appendTo(_this);
+                            }
+                            _this.css({
+                                marginTop: 0
+                            });
+                            _btnUp.bind("click", scrollUp); //Shawphy:绑定向上按钮的点击事件
+                        });
+
+                    }
+                    //Shawphy:向下翻页函数
+                    var scrollDown = function() {
+                        _btnDown.unbind("click", scrollDown);
+                        for (i = 1; i <= line; i++) {
+                            _this.find("li:last").show().prependTo(_this);
+                        }
+                        _this.css({
+                            marginTop: upHeight
+                        });
+                        _this.animate({
+                            marginTop: 0
+                        }, speed, function() {
+                            _btnDown.bind("click", scrollDown);
+                        });
+                    }
+                    //Shawphy:自动播放
+                    var autoPlay = function() {
+                        if (timer) timerID = window.setInterval(scrollUp, timer);
+                    };
+                    var autoStop = function() {
+                        if (timer) window.clearInterval(timerID);
+                    };
+                    //鼠标事件绑定
+                    _this.hover(autoStop, autoPlay).mouseout();
+                    _btnUp.css("cursor", "pointer").click(scrollUp).hover(autoStop, autoPlay); //Shawphy:向上向下鼠标事件绑定
+                    _btnDown.css("cursor", "pointer").click(scrollDown).hover(autoStop, autoPlay);
+
+                }
+            })
+        })(jQuery);
+
+        // $(document).ready(function() {
+        //     $("#s3").Scroll({
+        //         line: 4,
+        //         speed: 500,
+        //         timer: 2000,
+        //         up: "btn1",
+        //         down: "btn2"
+        //     });
+        // });
+
+    </script>
+
+    <script>
+        // if(GetUrlParam("v")=="only"){
+        //     parent.tools.load_m();
+        // }
+
+
+        layui.use(['form', 'layedit', 'laydate','carousel'], function () {
+            var form = layui.form
+                , layer = layui.layer
+                , layedit = layui.layedit
+                , laydate = layui.laydate;
+            var carousel = layui.carousel
+
+            //日期
+            laydate.render({
+                elem: '#start_time',
+                trigger: 'click',
+                type: 'datetime',
+                // value: new Date()
+            });
+
+            //日期
+            laydate.render({
+                elem: '#end_time',
+                trigger: 'click',
+                type: 'datetime',
+                // value: new Date()
+            });
+
+
+        });
+
+        function openGonggao(url){
+            var index = top.layer.open({
+                type: 2
+                , title: '公告信息'
+                , area: ['100%', '100%']
+                , shade: 0.5
+                , maxmin: false
+                , content: url
+                , zIndex: layer.zIndex
+                , success: function (layero) {
+                    layer.setTop(layero);
+                }
+            });
+            // layer.full(index);
+        }
+
+
+        function openShijian(url){
+            var index = top.layer.open({
+                type: 2
+                , title: '事件信息'
+                , area: ['100%', '100%']
+                , shade: 0.5
+                , maxmin: false
+                , content: url
+                , zIndex: layer.zIndex
+                , success: function (layero) {
+                    layer.setTop(layero);
+                }
+            });
+            // layer.full(index);
+        }
+
+        function openRenwu(url){
+            var index = top.layer.open({
+                type: 2
+                , title: '任务信息'
+                , area: ['100%', '100%']
+                , shade: 0.5
+                , maxmin: false
+                , content: url
+                , zIndex: layer.zIndex
+                , success: function (layero) {
+                    layer.setTop(layero);
+                }
+            });
+            // layer.full(index);
+        }
+
+        function openXiaoxi(url){
+            var index = top.layer.open({
+                type: 2
+                , title: '消息信息'
+                , area: ['100%', '100%']
+                , shade: 0.5
+                , maxmin: false
+                , content: url
+                , zIndex: layer.zIndex
+                , success: function (layero) {
+                    layer.setTop(layero);
+                }
+            });
+            // layer.full(index);
+        }
+
+        function openUrl(type,menu){
+            var ss;
+            if(type == 1){
+                ss = "公告管理";
+            }
+            if(type == 2){
+                ss = "事件管理";
+            }
+            if(type == 3){
+                ss = "任务管理";
+            }
+            if(type == 4){
+                ss = "消息管理";
+            }
+            parent.tools.selected_menu(ss,menu);
+        }
+
+        //加载下拉列表框
+        function loadFloorAreaSelect(select){
+
+            //加载机构类型
+            $.ajax({
+                url: 'floorarea/getSelectData',
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                type: 'post',
+                success: function (data) {
+                    if(data.code == 0){
+                        $.each(data.data, function (index, item) {
+                            if(item.uuid == select){
+                                $('#floor_area_select').append(new Option(item.floor_name, item.uuid,true,true));// 下拉菜单里添加元素
+                            }else{
+                                $('#floor_area_select').append(new Option(item.floor_name, item.uuid));// 下拉菜单里添加元素
+                            }
+                        });
+                        layui.form.render("select");
+                    }else{
+                        layer.alert(data.msg,function(index){
+                            layer.close(index);
+                        });
+                    }
+                }
+            });
+        }
+
+
+        function excel(){
+
+            // checkServer();
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('post', 'exportExcel', true);
+            xhr.responseType = 'blob';
+            xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+            xhr.onload = function () {
+                if (this.status == 200) {
+                    var blob = this.response;
+                    var a = document.createElement('a');
+                    var url = window.URL.createObjectURL(blob);
+                    a.href = url;
+                    //设置文件名称
+                    a.download = '生理数据统计信息.xls';
+                    a.click();
+                }
+
+                if(this.status == 999){
+                    layer.alert("error:开始和结束时间不能为空");
+                }
+
+                if(this.status == 998){
+                    layer.alert("error:用户信息异常");
+                }
+            }
+            xhr.send(JSON.stringify({
+                "startTime" : $("#start_time").val(),
+                "endTime" : $("#end_time").val(),
+            }));
+        }
+
+
+        function js_showuser() {
+
+            var index = layer.open({
+                type: 2
+                , title: '选择患者'
+                , area: ['90%', '90%']
+                , shade: 0.5
+                , maxmin: false
+                , content: 'custaccount_select.html'
+                , zIndex: layer.zIndex
+                , success: function (layero) {
+                    layer.setTop(layero);
+                }
+            });
+            layer.full(index);
+        }
+
+        var custUuid = null;
+        function GetValueCust(data) {
+            custUuid = data.uuid;
+            $('input[name="custName"]').val(data.name);
+        }
+
+        function clean_search() {
+            $("#start_time").val("");
+            $("#end_time").val("");
+            $("#custName").val("");
+            custUuid = null;
+            loadstaticts();
+        }
+    </script>
+
+</body>
+</html>

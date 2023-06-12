@@ -1,0 +1,52 @@
+{
+  "code": 0,
+  "msg": "",
+  "count": "5",
+  "data": [
+    {
+      "sn": 32,
+      "uuid": "191220GYIKJH",
+      "add_time": "2019-12-20 09:47:59",
+      "update_time": "0001-01-01 00:00:00",
+      "nursing_type_name": "一级护理",
+      "remark": "",
+      "mark": 1
+    },
+    {
+      "sn": 32,
+      "uuid": "191220GYIKJH",
+      "add_time": "2019-12-20 09:47:59",
+      "update_time": "0001-01-01 00:00:00",
+      "nursing_type_name": "二级护理",
+      "remark": "",
+      "mark": 1
+    },
+    {
+      "sn": 32,
+      "uuid": "191220GYIKJH",
+      "add_time": "2019-12-20 09:47:59",
+      "update_time": "0001-01-01 00:00:00",
+      "nursing_type_name": "三级护理",
+      "remark": "",
+      "mark": 1
+    },
+    {
+      "sn": 32,
+      "uuid": "191220GYIKJH",
+      "add_time": "2019-12-20 09:47:59",
+      "update_time": "0001-01-01 00:00:00",
+      "nursing_type_name": "四级护理",
+      "remark": "",
+      "mark": 1
+    },
+    {
+      "sn": 32,
+      "uuid": "191220GYIKJH",
+      "add_time": "2019-12-20 09:47:59",
+      "update_time": "0001-01-01 00:00:00",
+      "nursing_type_name": "五级护理",
+      "remark": "",
+      "mark": 1
+    }
+  ]
+}

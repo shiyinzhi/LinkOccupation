@@ -1,0 +1,273 @@
+﻿
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>肾内科血液透析中心信息管理</title>
+
+    <script src="layui/layui.js"></script>
+    <script src="layui/jquery.js"></script>
+    <script src="layui/myjs.js"></script>
+    <script src="layui/index.js"></script>
+    <script src="layui/jquery.timers-1.2.js"></script>
+    <link href="layui/css/layui.css" rel="stylesheet" />
+
+    <script type="text/javascript">
+        function changeFrameHeight() {
+            var ifm = document.getElementById("mainFramex");
+            ifm.height = document.documentElement.clientHeight - 100;
+        }
+        window.onresize = function () { changeFrameHeight(); }
+        $(function () { changeFrameHeight(); });
+    </script>
+    <style>
+        .layui-nav-img-new{
+            width: 228px;
+            height: 50px;
+        }
+        .memu_color{
+            background-color: #2E3037;
+        }
+        .memu_color_sub{
+            background-color: #393D49;
+        }
+        .memu_color_sub3{
+            background-color: #515263;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo" style="display:inline-block;width: 100%;background-image: url('layui/top.png')">
+            <!--<div class="" style="width: 100%">-->
+                <a href="index" style="color: #fff;float: left;margin-top: -6px">
+                    <!--<img src="layui/logo_back_none_1.png" class="layui-nav-img-new" />-->
+                </a>
+                <!--<h2 style="float: left">悦年华颐养中心</h2>-->
+            </div>
+            <!-- 头部区域（可配合layui已有的水平导航） -->
+            <ul class="layui-nav layui-layout-left">
+
+
+                <!--<li class="layui-nav-item"><a href="Web/LookOut/Sleep.aspx" target="mainFrame">快捷方式</a></li>-->
+            </ul>
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="javascript:;">
+                       <!--<img src="Web/ImageFiles/face/face.jpg" class="layui-nav-img" />--> 
+                        <!--<Label ID="Label1" runat="server" Text="管理员"></Label>-->
+                    </a>
+                    <!--<dl class="layui-nav-child">
+                        <dd><a href="#">基本资料</a></dd>
+                        <dd><a href="#">安全设置</a></dd>
+                    </dl>--> 
+                </li>
+                <li class="layui-nav-item"><a th:text="${'员工：'+userAccount.name}"></a></li>
+                <li class="layui-nav-item"><a id="login_out" lay-filter="login_out">退出</a></li>
+            </ul>
+        </div>
+
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                <ul class="layui-nav layui-nav-tree">
+                    <li class="layui-nav-item">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>首页</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="statistics.html?v=only" onclick="addTabFormMenu(this);return false" target="mainFrame">统计分析</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" th:if="${userAccount.admin==1}">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>患者信息</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="custaccount.html" onclick="addTabFormMenu(this);return false" target="mainFrame">患者管理</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="physdata.html" onclick="addTabFormMenu(this);return false" target="mainFrame">体格信息</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" th:if="${userAccount.admin==1}">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>员工信息</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="useraccount.html" onclick="addTabFormMenu(this);return false" target="mainFrame">员工管理</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>患者实验室数据</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="userinputdata.html" onclick="addTabFormMenu(this);return false" target="mainFrame">记录信息</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>居家饮食记录</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="dialysis.html" onclick="addTabFormMenu(this);return false" target="mainFrame">饮食记录</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>不良反应</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="badrecord.html" onclick="addTabFormMenu(this);return false" target="mainFrame">不良反应</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" th:if="${userAccount.admin==1}">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>知识库</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="repository.html" onclick="addTabFormMenu(this);return false" target="mainFrame">知识库管理</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" th:if="${userAccount.admin==1}">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>咨询医护</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="askdoctor.html" onclick="addTabFormMenu(this);return false" target="mainFrame">咨询问题</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="custeask.html" onclick="addTabFormMenu(this);return false" target="mainFrame">咨询管理</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" th:if="${userAccount.admin==1}">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>意见反馈</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="feedback.html" onclick="addTabFormMenu(this);return false" target="mainFrame">意见反馈管理</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="questionnairelist.html" onclick="addTabFormMenu(this);return false" target="mainFrame">问卷调查</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" th:if="${userAccount.admin==1}">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>积分规则</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="integralrule.html" onclick="addTabFormMenu(this);return false" target="mainFrame">规则设置</a></dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item" th:if="${userAccount.admin==1}">
+                        <a href="#"><i class="layui-icon layui-icon-home">&nbsp;&nbsp;</i>食物种类</a>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="foodType.html" onclick="addTabFormMenu(this);return false" target="mainFrame">种类信息</a></dd>
+                        </dl>
+                        <dl class="layui-nav-child">
+                            <dd class="memu_color"><a href="food.html" onclick="addTabFormMenu(this);return false" target="mainFrame">食物信息</a></dd>
+                        </dl>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="layui-body" id="nav_xbs_tab" style="height: 100%">
+            <!-- 内容主体区域 -->
+            <div class="layui-tab layui-tab-card layui-tab-brief" lay-filter="tabDemo" lay-allowclose="true" style="margin: 0">
+                <ul id="tabDemo" class="layui-tab-title">
+                    <li class="layui-this">首页<i class="layui-icon layui-unselect layui-tab-close" style="display: none">ဆ</i></li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show" lay-allowClose="false">
+                        <iframe src="main.html" id="mainFramex" name="mainFrame" style="width: 100%" frameborder="0" scrolling="auto"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 动态选项卡 -->
+            <!--<div id="tabzu" class="layui-tab layui-tab-card layui-tab-brief" lay-filter="tabDemo" lay-allowclose="true">-->
+                <!--<ul class="layui-tab-title"></ul>-->
+                <!--<div class="layui-tab-content"></div>-->
+            <!--</div>-->
+        </div>
+
+        <!--<div class="layui-footer">-->
+            <!--&lt;!&ndash; 底部固定区域 &ndash;&gt;-->
+            <!--© 悦年华颐养服务平台-->
+        <!--</div>-->
+    </div>
+
+    <script th:inline="javascript">
+        layui.config({
+            base: 'layui/tabright/' //此处路径请自行处理, 可以使用绝对路径
+        }).extend({
+            tabrightmenu: 'tabrightmenu'
+        });
+        var rightmenu_;
+        layui.use(['element','form','tabrightmenu','jquery'], function () {
+            var form = layui.form
+                , layer = layui.layer;
+            var element = layui.element;
+
+            $(document).on('click','#login_out',function() {
+                layer.confirm('是否要退出？', function (index) {
+                    layer.close(index);
+                    window.location.href = "useraccount/loginOut";
+                });
+            });
+
+            //var loading = layer.msg('正在处理请稍后......', {icon: 16, shade: 0.3, time:0});
+
+            //子页面调用
+            var _tools = {
+                selected_menu: function(name,selectedmenu){
+                    $('.layui-nav-child a').each(function(){
+                        var href = $(this).attr('href');
+                        // var hrefs = href.replace('_','');
+                        // console.log(hrefs);
+                        if(selectedmenu == href){
+                            $(this).parent().addClass('layui-this');
+                            $(this).parent().parent().closest('dd').addClass('layui-nav-itemed');
+                            $(this).parent().closest('li').addClass('layui-nav-itemed');
+                        }else{
+                            $(this).parent().removeClass('layui-this');
+                            // $(this).parent().parent().closest('dd').removeClass('layui-nav-itemed');
+                            // $(this).parent().closest('li').removeClass('layui-nav-itemed');
+                        }
+                        addTab(name,selectedmenu);
+                    });
+                },
+                close_load:function () {
+                    layer.close(loading);
+                },
+                load_m:function () {
+                    loading = layer.msg('正在处理请稍后......', {icon: 16, shade: 0.3, time:0});
+                },
+                addtab:function(title,url){
+                    addTab(title,url);
+                }
+            }
+            window.tools = _tools;
+
+            rightmenu_ = layui.tabrightmenu;
+            // 默认方式渲染全部：关闭当前（closethis）、关闭所有（closeall）、关闭其它（closeothers）、关闭左侧所有（closeleft）、关闭右侧所有（closeright）、刷新当前页（refresh）
+            rightmenu_.render({
+                container: '#nav_xbs_tab',
+                filter: 'tabDemo',
+                navArr: [
+                    {eventName: 'refresh', title: '刷新当前页'},
+                    // {eventName: 'closethis', title: '关闭当前页'},
+                    {eventName: 'closeall', title: '关闭所有页'},
+                    {eventName: 'closeothers', title: '关闭其它页'}
+                ]
+            });
+
+            //解决菜单无法加载问题
+            element.init()
+            // form.render();
+
+        });
+
+        //5分钟检测在线状态
+        // $('.layui-layout-body').everyTime('300s',a);
+        // function a(){
+        //     checkServer();
+        // }
+    </script>
+</body>
+</html>

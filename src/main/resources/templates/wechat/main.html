@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>自动登录后跳转的页面</title>
+</head>
+<body>
+    自动登录后跳转的页面
+</body>
+</html>
+
+<script th:inline="javascript">
+    // var Aside_menu = [[${Aside_menu}]];
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]);
+        return null;
+    }
+    if(getQueryString("openid") != null){
+        alert("openid:"+getQueryString("openid"));
+    }
+</script>

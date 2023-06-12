@@ -1,0 +1,285 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+
+
+    <title>悦年华颐养中心</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <!-- VENDOR CSS -->
+
+    <script th:src="@{'/layui/echarts/echarts.js'}"></script>
+    <script th:src="@{'/layui/jquery.js'}"></script>
+    <script th:src="@{'/layui/layui.js'}"></script>
+    <script th:src="@{'/layui/myjs.js'}"></script>
+    <link th:href="@{'/layui/css/layui.css'}" rel="stylesheet" />
+    <link th:href="@{'/layui/css/admin.css'}" rel="stylesheet" />
+
+    <style>
+        .input_st{
+            border-left-width:0px;
+            border-top-width:0px;
+            border-right-width:0px;
+            border-bottom-width:2px
+        }
+    </style>
+    <script type="text/javascript">
+        function changeFrameHeight() {
+            var ifm = document.getElementById("mainFrame");
+
+        }
+        window.onresize = function () { changeFrameHeight(); }
+        $(function () { changeFrameHeight(); });
+    </script>
+
+
+    <script>
+        layui.use(['form', 'layedit', 'laydate'], function () {
+
+        });
+
+
+    </script>
+
+    <style>
+        .main_static{
+            left: 10px;
+            margin-top: -12px;
+            width: 20px;
+        }
+    </style>
+
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        ul, li {
+            list-style-type: none;
+        }
+        body {
+            font: 12px/180% Arial, Helvetica, sans-serif;
+        }
+        a {
+            color: #333;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #3366cc;
+            text-decoration: underline;
+        }
+        .demopage {
+            width: 730px;
+            margin: 0 auto;
+        }
+        .demopage h2 {
+            font-size: 14px;
+            margin: 20px 0;
+        }
+        /* scrollDiv */
+        .scrollDiv {
+            height: 100px;/* 必要元素 */
+            line-height: 25px;
+            /*border: #ccc 1px solid;*/
+            overflow: hidden;/* 必要元素 */
+        }
+        .scrollDiv li {
+            height: auto;
+            padding-left: 10px;
+        }
+        #s2, #s3 {
+            height: 100px;
+        }
+
+        .layuiadmin-card-text{
+            background-color: #f8f8f8;
+            color: #777;
+            padding: 12px;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="layui-fluid">
+
+
+        <div class="layui-card">
+            <div class="layui-card-header">
+                工作窗口
+
+            </div>
+            <div class="layui-card-body">
+                <div class="layui-row layui-col-space10">
+                    <div class="layui-col-xs12 layui-col-sm3">
+                        <div class="layuiadmin-card-text">
+                            <div class="layui-text-top" style="margin-left: 5px"><i class="layui-icon layui-icon-form"></i><a lay-href="">生理数据</a>
+                                <!--<p><span class="layui-badge" style="margin-top: -4px;margin-left: -5px;border-radius: 10px">6</span></p>-->
+                                <p class="layui-text-bottom" style="float:right;cursor: pointer"><a onclick="openUrl(1,'Gonggao/Gonggao.html')"></a><span></span></p></div>
+                            <!--<div class="layui-carousel" id="gonggao_msg" style="height: 78px">-->
+                            <!--<div id="gonggao_msg" style="height: 96px;overflow-y:auto">-->
+                                <!--<div carousel-item="" id="gonggao_msg_item">-->
+                                    <!--<div>无</div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+
+                            <div class="scrollDiv" id="s3">
+                                <ul id="gonggao_ul">
+                                    <h2><a th:text="${mainProperties.totalPhyData}">暂无消息</a></h2>
+                                </ul>
+                            </div>
+                            <!--<span id="btn1" style="color: #F8893E">点击向上滚动</span>&nbsp;&nbsp;<span id="btn2" style="color: #F8893E">点击向下滚动</span>-->
+                        </div>
+                    </div>
+                    <div class="layui-col-xs12 layui-col-sm3">
+                        <div class="layuiadmin-card-text">
+                            <div class="layui-text-top" style="margin-left: 5px"><i class="layui-icon layui-icon-water"></i><a lay-href="">生理数据异常</a>
+                                <!--<p><span class="layui-badge" style="margin-top: -4px;margin-left: -5px;border-radius: 10px">6</span></p>-->
+                                <p class="layui-text-bottom" style="float:right;cursor: pointer"><a onclick="openUrl(2,'Gonggao/Shijian.html')"></a><span></span></p></div>
+                            <!--<div class="layui-carousel" id="shijian_msg" style="height: 78px">-->
+                                <!--<div id="shijian_msg" style="height: 96px;overflow-y:auto">-->
+                                <!--<div carousel-item="" id="shijian_msg_item">-->
+                                    <!--<div>无</div>-->
+                                <!--</div>-->
+                                <div class="scrollDiv" id="s4">
+                                    <ul id="gonggao_u2">
+                                        <h2><a th:text="${mainProperties.ycPhyData}">暂无消息</a></h2>
+                                    </ul>
+                                </div>
+                                <!--<span id="btn3" style="color: #F8893E">点击向上滚动</span>&nbsp;&nbsp;<span id="btn4" style="color: #F8893E">点击向下滚动</span>-->
+                        </div>
+                    </div>
+                    <div class="layui-col-xs12 layui-col-sm3">
+                        <div class="layuiadmin-card-text">
+                            <div class="layui-text-top" style="margin-left: 5px"><i class="layui-icon layui-icon-upload-circle"></i><a lay-href="">医护录入</a>
+                                <!--<p><span class="layui-badge" style="margin-top: -4px;margin-left: -5px;border-radius: 10px">6</span></p>-->
+                                <p class="layui-text-bottom" style="float:right;cursor: pointer"><a onclick="openUrl(3,'Gonggao/Renwu.html')"></a><span></span></p></div>
+                            <!--<div class="layui-carousel" id="renwu_msg" style="height: 78px">-->
+                                <!--<div id="renwu_msg" style="height: 96px;overflow-y:auto">-->
+                                <!--<div carousel-item="" id="renwu_msg_item">-->
+                                    <!--<div>无</div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <div class="scrollDiv" id="s5">
+                                <ul id="gonggao_u3">
+                                    <h2><a th:text="${mainProperties.totalInputData}">暂无消息</a></h2>
+                                </ul>
+                            </div>
+                            <!--<span id="btn5" style="color: #F8893E">点击向上滚动</span>&nbsp;&nbsp;<span id="btn6" style="color: #F8893E">点击向下滚动</span>-->
+                        </div>
+                    </div>
+                    <div class="layui-col-xs12 layui-col-sm3">
+                        <div class="layuiadmin-card-text">
+                            <div class="layui-text-top" style="margin-left: 5px"><i class="layui-icon layui-icon-dialogue"></i><a lay-href="">不良记录</a>
+                                <!--<p><span class="layui-badge" style="margin-top: -4px;margin-left: -5px;border-radius: 10px">6</span></p>-->
+                                <p class="layui-text-bottom" style="float:right;cursor: pointer;"><a onclick="openUrl(4,'Gonggao/Xiaoxi.html')"></a><span></span></p></div>
+                            <!--<div class="layui-carousel" id="xiaoxi_msg" style="height: 78px">-->
+                                <!--<div id="xiaoxi_msg" style="height: 96px;overflow-y:auto">-->
+                                <!--<div carousel-item="" id="xiaoxi_msg_item">-->
+                                    <!--<div>无</div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <div class="scrollDiv" id="s6">
+                                <UL ID="gonggao_u4">
+                                    <h2><a th:text="${mainProperties.ycInputData}">暂无消息</a></h2>
+                                </UL>
+                            </div>
+                            <!--<span id="btn7" style="color: #F8893E">点击向上滚动</span>&nbsp;&nbsp;<span id="btn8" style="color: #F8893E">点击向下滚动</span>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script type="text/javascript" th:inline="javascript">
+        var loadindex;
+        $(document).on('click', '#btnq', function () {
+            // layer.alert('响应点击事件');
+            // checkServerSub();
+            loadRoom($("#floor_area_select").val());
+
+        });
+
+    </script>
+
+    <script type="text/javascript">
+        (function($) {
+            $.fn.extend({
+                Scroll: function(opt, callback) {
+                    //参数初始化
+                    if (!opt) var opt = {};
+                    var _btnUp = $("#" + opt.up); //Shawphy:向上按钮
+                    var _btnDown = $("#" + opt.down); //Shawphy:向下按钮
+                    var timerID;
+                    var _this = this.eq(0).find("ul:first");
+                    var lineH = _this.find("li:first").height(), //获取行高
+                        line = opt.line ? parseInt(opt.line, 10) : parseInt(this.height() / lineH, 10), //每次滚动的行数，默认为一屏，即父容器高度
+                        speed = opt.speed ? parseInt(opt.speed, 10) : 500; //卷动速度，数值越大，速度越慢（毫秒）
+                    timer = opt.timer //?parseInt(opt.timer,10):3000; //滚动的时间间隔（毫秒）
+                    if (line == 0) line = 1;
+                    var upHeight = 0 - line * lineH;
+                    //滚动函数
+                    var scrollUp = function() {
+                        _btnUp.unbind("click", scrollUp); //Shawphy:取消向上按钮的函数绑定
+                        _this.animate({
+                            marginTop: upHeight
+                        }, speed, function() {
+                            for (i = 1; i <= line; i++) {
+                                _this.find("li:first").appendTo(_this);
+                            }
+                            _this.css({
+                                marginTop: 0
+                            });
+                            _btnUp.bind("click", scrollUp); //Shawphy:绑定向上按钮的点击事件
+                        });
+
+                    }
+                    //Shawphy:向下翻页函数
+                    var scrollDown = function() {
+                        _btnDown.unbind("click", scrollDown);
+                        for (i = 1; i <= line; i++) {
+                            _this.find("li:last").show().prependTo(_this);
+                        }
+                        _this.css({
+                            marginTop: upHeight
+                        });
+                        _this.animate({
+                            marginTop: 0
+                        }, speed, function() {
+                            _btnDown.bind("click", scrollDown);
+                        });
+                    }
+                    //Shawphy:自动播放
+                    var autoPlay = function() {
+                        if (timer) timerID = window.setInterval(scrollUp, timer);
+                    };
+                    var autoStop = function() {
+                        if (timer) window.clearInterval(timerID);
+                    };
+                    //鼠标事件绑定
+                    _this.hover(autoStop, autoPlay).mouseout();
+                    _btnUp.css("cursor", "pointer").click(scrollUp).hover(autoStop, autoPlay); //Shawphy:向上向下鼠标事件绑定
+                    _btnDown.css("cursor", "pointer").click(scrollDown).hover(autoStop, autoPlay);
+
+                }
+            })
+        })(jQuery);
+
+        // $(document).ready(function() {
+        //     $("#s3").Scroll({
+        //         line: 4,
+        //         speed: 500,
+        //         timer: 2000,
+        //         up: "btn1",
+        //         down: "btn2"
+        //     });
+        // });
+
+    </script>
+</body>
+</html>
