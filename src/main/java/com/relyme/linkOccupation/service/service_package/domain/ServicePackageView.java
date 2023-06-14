@@ -1,29 +1,31 @@
 package com.relyme.linkOccupation.service.service_package.domain;
 
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.relyme.linkOccupation.utils.bean.BaseEntityForMysql;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
-import java.util.Date;
 
 /**
- * 套餐服务信息
+ * 套餐服务信息视图
  * @author shiyinzhi
  */
 @Entity
-@Table(name = "service_package",indexes = {
+@Table(name = "view_service_package",indexes = {
         @Index(columnList = "uuid,user_account_uuid,package_name")
 })
-public class ServicePackage extends BaseEntityForMysql {
+public class ServicePackageView extends BaseEntityForMysql {
 
     /**
      * 创建人uuid
      */
     @Column(name = "user_account_uuid", length = 36)
     private String userAccountUuid;
+
+    /**
+     * 姓名
+     */
+    @Column(name = "name",length = 128,nullable = false)
+    private String userName;
 
     /**
      * 套餐名称
@@ -38,9 +40,9 @@ public class ServicePackage extends BaseEntityForMysql {
     private String coverFileName;
 
     /**
-     * 是否下架 0上架 1下架
+     * 是否下架 0下架 1上架
      */
-    @Column(name = "is_close", length = 3,columnDefinition="tinyint default 0")
+    @Column(name = "is_close", length = 3,columnDefinition="tinyint default 1")
     private int isClose;
 
     @Transient
@@ -76,6 +78,14 @@ public class ServicePackage extends BaseEntityForMysql {
 
     public void setIsClose(int isClose) {
         this.isClose = isClose;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getCoverFilePath() {

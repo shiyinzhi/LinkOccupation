@@ -67,6 +67,12 @@ public class ServiceSpecialOffer extends BaseEntityForMysql {
     @Column(name = "free_monthes", length = 3,columnDefinition="int default 0")
     private int freeMonthes;
 
+    /**
+     * 是否下架 0上架 1下架
+     */
+    @Column(name = "is_close", length = 3,columnDefinition="tinyint default 0")
+    private int isClose;
+
 
     public String getUserAccountUuid() {
         return userAccountUuid;
@@ -130,5 +136,13 @@ public class ServiceSpecialOffer extends BaseEntityForMysql {
 
     public void setFreeMonthes(int freeMonthes) {
         this.freeMonthes = freeMonthes;
+    }
+
+    public int getIsClose() {
+        return isClose;
+    }
+
+    public void setIsClose(int isClose) {
+        this.isClose = isClose;
     }
 }

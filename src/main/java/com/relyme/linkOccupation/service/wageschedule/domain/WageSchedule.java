@@ -126,6 +126,12 @@ public class WageSchedule extends BaseEntityForMysql {
     @Column(name = "wage_true",length = 18,scale = 2)
     private BigDecimal wageTrue;
 
+    /**
+     * 状态 是否已发放
+     */
+    @Column(name = "is_payment", length = 3,columnDefinition="tinyint default 0")
+    private int isPayment;
+
     public String getEnterpriseUuid() {
         return enterpriseUuid;
     }
@@ -260,5 +266,13 @@ public class WageSchedule extends BaseEntityForMysql {
 
     public void setWageTrue(BigDecimal wageTrue) {
         this.wageTrue = wageTrue;
+    }
+
+    public int getIsPayment() {
+        return isPayment;
+    }
+
+    public void setIsPayment(int isPayment) {
+        this.isPayment = isPayment;
     }
 }

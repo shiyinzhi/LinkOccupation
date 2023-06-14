@@ -3,10 +3,7 @@ package com.relyme.linkOccupation.service.service_package.domain;
 
 import com.relyme.linkOccupation.utils.bean.BaseEntityForMysql;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 /**
@@ -55,6 +52,9 @@ public class ServicePrices extends BaseEntityForMysql {
     @Column(name = "year_price", scale = 2,length = 18)
     private BigDecimal yearPrice;
 
+    @Transient
+    private String postNum;
+
     public String getUserAccountUuid() {
         return userAccountUuid;
     }
@@ -101,5 +101,13 @@ public class ServicePrices extends BaseEntityForMysql {
 
     public void setYearPrice(BigDecimal yearPrice) {
         this.yearPrice = yearPrice;
+    }
+
+    public String getPostNum() {
+        return postNum;
+    }
+
+    public void setPostNum(String postNum) {
+        this.postNum = postNum;
     }
 }

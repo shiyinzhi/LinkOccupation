@@ -191,4 +191,11 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.basePackage("com.relyme.linkOccupation.service.invite_service"))
                 .paths(PathSelectors.any()).build().groupName("招聘服务信息接口（inviteservice）").pathMapping("/");
     }
+
+    @Bean
+    public Docket constitcsApiForWageSchedule() {
+        return new Docket(DocumentationType.SWAGGER_2).enable(true).apiInfo(apiInfo()).select()
+                .apis(RequestHandlerSelectors.basePackage("com.relyme.linkOccupation.service.wageschedule"))
+                .paths(PathSelectors.any()).build().groupName("工资表信息接口（wageschedule）").pathMapping("/");
+    }
 }
