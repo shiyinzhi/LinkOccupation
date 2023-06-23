@@ -4,20 +4,12 @@ package com.relyme.linkOccupation.service.service_package.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.math.BigDecimal;
-
 /**
- * 套餐服务价格信息ServicePricesDto
+ * 套餐服务价格信息ServicePricesQuerySingleDto
  * @author shiyinzhi
  */
-@ApiModel(value = "套餐服务价格信息ServicePricesDto", description = "套餐服务价格信息ServicePricesDto")
-public class ServicePricesDto {
-
-    /**
-     * 服务价格uuid
-     */
-    @ApiModelProperty("服务价格uuid")
-    private String uuid;
+@ApiModel(value = "套餐服务价格信息ServicePricesQuerySingleDto", description = "套餐服务价格信息ServicePricesQuerySingleDto")
+public class ServicePricesQuerySingleDto {
 
     /**
      * 服务套餐uuid
@@ -28,26 +20,14 @@ public class ServicePricesDto {
     /**
      * 企业人数下限
      */
-    @ApiModelProperty("企业人数下限")
+    @ApiModelProperty("服务价格uuid")
     private int employeesLowerLimit;
 
     /**
      * 企业人数上限
      */
-    @ApiModelProperty("企业人数上限")
+    @ApiModelProperty("服务价格uuid")
     private int employeesUpperLimit;
-
-    /**
-     * 月价格
-     */
-    @ApiModelProperty("月价格")
-    private BigDecimal monthPrice;
-
-    /**
-     * 年价格
-     */
-    @ApiModelProperty("年价格")
-    private BigDecimal yearPrice;
 
     public String getServicePackageUuid() {
         return servicePackageUuid;
@@ -73,27 +53,4 @@ public class ServicePricesDto {
         this.employeesUpperLimit = employeesUpperLimit;
     }
 
-    public BigDecimal getMonthPrice() {
-        return monthPrice;
-    }
-
-    public void setMonthPrice(BigDecimal monthPrice) {
-        this.monthPrice = monthPrice;
-    }
-
-    public BigDecimal getYearPrice() {
-        return yearPrice;
-    }
-
-    public void setYearPrice(BigDecimal yearPrice) {
-        this.yearPrice = yearPrice;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
 }

@@ -10,14 +10,14 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 服务订单信息
+ * 服务订单信息 视图
  * @author shiyinzhi
  */
 @Entity
-@Table(name = "service_orders",indexes = {
+@Table(name = "view_service_orders",indexes = {
         @Index(columnList = "uuid,user_account_uuid,service_package_uuid,enterprise_uuid")
 })
-public class ServiceOrders extends BaseEntityForMysql {
+public class ServiceOrdersView extends BaseEntityForMysql {
 
     /**
      * 订单处理人uuid
@@ -32,10 +32,46 @@ public class ServiceOrders extends BaseEntityForMysql {
     private String servicePackageUuid;
 
     /**
+     * 套餐名称
+     */
+    @Column(name = "package_name",length = 128)
+    private String packageName;
+
+    /**
      * 企业UUID
      */
     @Column(name = "enterprise_uuid",length = 36)
     private String enterpriseUuid;
+
+    /**
+     * 企业名称
+     */
+    @Column(name = "enterprise_name",length = 150)
+    private String enterpriseName;
+
+    /**
+     * 企业联系电话
+     */
+    @Column(name = "contact_phone",length = 12)
+    private String contactPhone;
+
+    /**
+     * 企业联系人
+     */
+    @Column(name = "contact_person",length = 128)
+    private String contactPerson;
+
+    /**
+     * 企业人数下限
+     */
+    @Column(name = "employees_lower_limit", length = 3,columnDefinition="int default 0")
+    private int employeesLowerLimit;
+
+    /**
+     * 企业人数上限
+     */
+    @Column(name = "employees_upper_limit", length = 3,columnDefinition="int default 0")
+    private int employeesUpperLimit;
 
     /**
      * 服务价格UUID
@@ -51,6 +87,42 @@ public class ServiceOrders extends BaseEntityForMysql {
     private String serviceSpecialOfferUuid;
 
     /**
+     * 优惠活动类型 0 体验包 1 充值好礼
+     */
+    @Column(name = "special_type", length = 3,columnDefinition="int default 0")
+    private int specialType;
+
+    /**
+     * 折扣 %
+     */
+    @Column(name = "service_discounts", scale = 2,length = 18)
+    private BigDecimal serviceDiscounts;
+
+    /**
+     * 优惠月数
+     */
+    @Column(name = "special_monthes", length = 3,columnDefinition="int default 0")
+    private int specialMonthes;
+
+    /**
+     * 优惠次数
+     */
+    @Column(name = "special_counts", length = 3,columnDefinition="int default 0")
+    private int specialCounts;
+
+    /**
+     * 购买年数
+     */
+    @Column(name = "buy_years", length = 3,columnDefinition="int default 0")
+    private int buyYears;
+
+    /**
+     * 赠送月数
+     */
+    @Column(name = "free_monthes", length = 3,columnDefinition="int default 0")
+    private int freeMonthes;
+
+    /**
      * 购买类型 1 按月购买 2按年购买
      */
     @Column(name = "buy_type", length = 3,columnDefinition="tinyint default 1")
@@ -60,7 +132,7 @@ public class ServiceOrders extends BaseEntityForMysql {
      * 购买数量
      */
     @Column(name = "buy_num", length = 11,columnDefinition="int default 0")
-    private int buyNum;
+    private int buNum;
 
 
     /**
@@ -106,9 +178,9 @@ public class ServiceOrders extends BaseEntityForMysql {
     private Date payTime;
 
     /**
-     * 是否线下购买 -1待处理 0 否 1是
+     * 是否线下购买 0 否 1是
      */
-    @Column(name = "is_buy_offline", length = 3,columnDefinition="tinyint default -1")
+    @Column(name = "is_buy_offline", length = 3,columnDefinition="tinyint default 0")
     private int isBuyOffline;
 
     /**
@@ -181,12 +253,12 @@ public class ServiceOrders extends BaseEntityForMysql {
         this.servicePackageOrder = servicePackageOrder;
     }
 
-    public int getBuyNum() {
-        return buyNum;
+    public int getBuNum() {
+        return buNum;
     }
 
-    public void setBuyNum(int buyNum) {
-        this.buyNum = buyNum;
+    public void setBuNum(int buNum) {
+        this.buNum = buNum;
     }
 
     public BigDecimal getBuyMoney() {
@@ -235,5 +307,101 @@ public class ServiceOrders extends BaseEntityForMysql {
 
     public void setPayTime(Date payTime) {
         this.payTime = payTime;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public String getEnterpriseName() {
+        return enterpriseName;
+    }
+
+    public void setEnterpriseName(String enterpriseName) {
+        this.enterpriseName = enterpriseName;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
+    }
+
+    public int getEmployeesLowerLimit() {
+        return employeesLowerLimit;
+    }
+
+    public void setEmployeesLowerLimit(int employeesLowerLimit) {
+        this.employeesLowerLimit = employeesLowerLimit;
+    }
+
+    public int getEmployeesUpperLimit() {
+        return employeesUpperLimit;
+    }
+
+    public void setEmployeesUpperLimit(int employeesUpperLimit) {
+        this.employeesUpperLimit = employeesUpperLimit;
+    }
+
+    public int getSpecialType() {
+        return specialType;
+    }
+
+    public void setSpecialType(int specialType) {
+        this.specialType = specialType;
+    }
+
+    public BigDecimal getServiceDiscounts() {
+        return serviceDiscounts;
+    }
+
+    public void setServiceDiscounts(BigDecimal serviceDiscounts) {
+        this.serviceDiscounts = serviceDiscounts;
+    }
+
+    public int getSpecialMonthes() {
+        return specialMonthes;
+    }
+
+    public void setSpecialMonthes(int specialMonthes) {
+        this.specialMonthes = specialMonthes;
+    }
+
+    public int getSpecialCounts() {
+        return specialCounts;
+    }
+
+    public void setSpecialCounts(int specialCounts) {
+        this.specialCounts = specialCounts;
+    }
+
+    public int getBuyYears() {
+        return buyYears;
+    }
+
+    public void setBuyYears(int buyYears) {
+        this.buyYears = buyYears;
+    }
+
+    public int getFreeMonthes() {
+        return freeMonthes;
+    }
+
+    public void setFreeMonthes(int freeMonthes) {
+        this.freeMonthes = freeMonthes;
     }
 }

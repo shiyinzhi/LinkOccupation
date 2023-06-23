@@ -67,6 +67,18 @@ public class ServiceStatus extends BaseEntityForMysql {
     @Column(name = "status_process", scale = 2,length = 18)
     private BigDecimal statusProcess;
 
+    /**
+     * 服务次数
+     */
+    @Column(name = "service_count", length = 3,columnDefinition="int default 0")
+    private int serviceCount;
+
+    /**
+     * 是否已完成 0否 1是
+     */
+    @Column(name = "has_finished", length = 3,columnDefinition="tinyint default 0")
+    private int hasFinished;
+
 
     public String getUserAccountUuid() {
         return userAccountUuid;
@@ -122,5 +134,21 @@ public class ServiceStatus extends BaseEntityForMysql {
 
     public void setEnterpriseUuid(String enterpriseUuid) {
         this.enterpriseUuid = enterpriseUuid;
+    }
+
+    public int getServiceCount() {
+        return serviceCount;
+    }
+
+    public void setServiceCount(int serviceCount) {
+        this.serviceCount = serviceCount;
+    }
+
+    public int getHasFinished() {
+        return hasFinished;
+    }
+
+    public void setHasFinished(int hasFinished) {
+        this.hasFinished = hasFinished;
     }
 }

@@ -5,6 +5,8 @@ import com.relyme.linkOccupation.service.service_package.domain.ServiceDetail;
 import com.relyme.linkOccupation.utils.dao.ExtJpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
+
 public interface ServiceDetailDao extends ExtJpaRepository<ServiceDetail, String>, JpaSpecificationExecutor<ServiceDetail> {
 
     /**
@@ -13,5 +15,12 @@ public interface ServiceDetailDao extends ExtJpaRepository<ServiceDetail, String
      * @return
      */
     ServiceDetail findByUuid(String uuid);
+
+    /**
+     * 通过 servicePackageUuid 查询服务内容
+     * @param servicePackageUuid
+     * @return
+     */
+    List<ServiceDetail> findByServicePackageUuid(String servicePackageUuid);
 
 }
