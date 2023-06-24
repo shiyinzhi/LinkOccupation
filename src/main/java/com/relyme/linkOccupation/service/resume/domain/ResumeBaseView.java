@@ -5,18 +5,21 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.relyme.linkOccupation.utils.bean.BaseEntityForMysql;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.util.Date;
 
 /**
- * 个人简历基本信息
+ * 个人简历基本信息 视图
  * @author shiyinzhi
  */
 @Entity
-@Table(name = "resume_base",indexes = {
+@Table(name = "view_resume_base",indexes = {
         @Index(columnList = "uuid,cust_account_uuid")
 })
-public class ResumeBase extends BaseEntityForMysql {
+public class ResumeBaseView extends BaseEntityForMysql {
 
     /**
      * 创建人uuid
@@ -153,14 +156,23 @@ public class ResumeBase extends BaseEntityForMysql {
     @Column(name = "languages",length = 256)
     private String languages;
 
-    @Transient
-    private int totalPush = 0;
+    /**
+     * 投放次数
+     */
+    @Column(name = "total_push", length = 3,columnDefinition="int default 0")
+    private int totalPush;
 
-    @Transient
-    private int totalShure = 0;
+    /**
+     * 录用次数
+     */
+    @Column(name = "total_shure", length = 3,columnDefinition="int default 0")
+    private int totalShure;
 
-    @Transient
-    private int totalNotShure = 0;
+    /**
+     * 未录用次数
+     */
+    @Column(name = "total_notshure", length = 3,columnDefinition="int default 0")
+    private int totalNotshure;
 
     public String getCustAccountUuid() {
         return custAccountUuid;
@@ -354,11 +366,11 @@ public class ResumeBase extends BaseEntityForMysql {
         this.totalShure = totalShure;
     }
 
-    public int getTotalNotShure() {
-        return totalNotShure;
+    public int getTotalNotshure() {
+        return totalNotshure;
     }
 
-    public void setTotalNotShure(int totalNotShure) {
-        this.totalNotShure = totalNotShure;
+    public void setTotalNotshure(int totalNotshure) {
+        this.totalNotshure = totalNotshure;
     }
 }
