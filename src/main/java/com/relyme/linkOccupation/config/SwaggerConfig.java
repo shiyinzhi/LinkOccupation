@@ -198,4 +198,32 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.basePackage("com.relyme.linkOccupation.service.wageschedule"))
                 .paths(PathSelectors.any()).build().groupName("工资表信息接口（wageschedule）").pathMapping("/");
     }
+
+    @Bean
+    public Docket constitcsApiForInvoice() {
+        return new Docket(DocumentationType.SWAGGER_2).enable(true).apiInfo(apiInfo()).select()
+                .apis(RequestHandlerSelectors.basePackage("com.relyme.linkOccupation.service.invoice"))
+                .paths(PathSelectors.any()).build().groupName("发票信息接口（invoice）").pathMapping("/");
+    }
+
+    @Bean
+    public Docket constitcsApiForServicePackage() {
+        return new Docket(DocumentationType.SWAGGER_2).enable(true).apiInfo(apiInfo()).select()
+                .apis(RequestHandlerSelectors.basePackage("com.relyme.linkOccupation.service.service_package"))
+                .paths(PathSelectors.any()).build().groupName("套餐服务信息接口（servicepackage）").pathMapping("/");
+    }
+
+    @Bean
+    public Docket constitcsApiForComplaint() {
+        return new Docket(DocumentationType.SWAGGER_2).enable(true).apiInfo(apiInfo()).select()
+                .apis(RequestHandlerSelectors.basePackage("com.relyme.linkOccupation.service.complaint"))
+                .paths(PathSelectors.any()).build().groupName("投诉建议信息接口（complaint）").pathMapping("/");
+    }
+
+    @Bean
+    public Docket constitcsApiForLegalAdvice() {
+        return new Docket(DocumentationType.SWAGGER_2).enable(true).apiInfo(apiInfo()).select()
+                .apis(RequestHandlerSelectors.basePackage("com.relyme.linkOccupation.service.legal_advice"))
+                .paths(PathSelectors.any()).build().groupName("法律咨询信息接口（legaladvice）").pathMapping("/");
+    }
 }
