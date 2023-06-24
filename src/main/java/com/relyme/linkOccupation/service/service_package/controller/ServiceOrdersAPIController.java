@@ -5,16 +5,11 @@ import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.invoice.dao.InvoiceDao;
 import com.relyme.linkOccupation.service.invoice.domain.Invoice;
-import com.relyme.linkOccupation.service.service_package.dao.ServiceOrdersDao;
-import com.relyme.linkOccupation.service.service_package.dao.ServicePackageDao;
-import com.relyme.linkOccupation.service.service_package.dao.ServicePricesDao;
-import com.relyme.linkOccupation.service.service_package.dao.ServiceSpecialOfferDao;
-import com.relyme.linkOccupation.service.service_package.domain.ServiceOrders;
-import com.relyme.linkOccupation.service.service_package.domain.ServicePackage;
-import com.relyme.linkOccupation.service.service_package.domain.ServicePrices;
-import com.relyme.linkOccupation.service.service_package.domain.ServiceSpecialOffer;
+import com.relyme.linkOccupation.service.service_package.dao.*;
+import com.relyme.linkOccupation.service.service_package.domain.*;
 import com.relyme.linkOccupation.service.service_package.dto.ServiceOrdersBuyPriceDto;
 import com.relyme.linkOccupation.service.service_package.dto.ServiceOrdersDto;
+import com.relyme.linkOccupation.service.service_package.dto.ServiceOrdersMineQueryDto;
 import com.relyme.linkOccupation.utils.JSON;
 import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
@@ -24,7 +19,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -33,10 +29,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -50,6 +51,9 @@ public class ServiceOrdersAPIController {
 
     @Autowired
     ServiceOrdersDao serviceOrdersDao;
+
+    @Autowired
+    ServiceOrdersViewDao serviceOrdersViewDao;
 
     @Autowired
     ServicePackageDao servicePackageDao;
@@ -133,6 +137,11 @@ public class ServiceOrdersAPIController {
                 invoice.setServicePackageOrder(serviceOrders.getServicePackageOrder());
                 invoiceDao.save(invoice);
             }
+
+            //更新企业订单uuid、套餐uuid
+            enterpriseInfo.setServiceOrdersUuid(serviceOrders.getUuid());
+            enterpriseInfo.setServicePackageUuid(byUuid.getUuid());
+            enterpriseInfoDao.save(enterpriseInfo);
 
             return new ResultCodeNew("0","",serviceOrders);
         }catch(Exception ex){
@@ -235,6 +244,75 @@ public class ServiceOrdersAPIController {
 
         serviceOrders.setBuyMoney(buyMoney);
         return serviceOrders;
+    }
+
+
+    /**
+     * 条件查询信息 我的订单
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("条件查询信息 我的订单")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrdersView.class,notinclude = "sn,addTime,updateTime,active,page,pageSize,querySort,orderColumn,limit")
+    @RequestMapping(value="/findByConditionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object findByConditionAPI(@Validated @RequestBody ServiceOrdersMineQueryDto queryEntity, HttpServletRequest request) {
+        try{
+            //查询默认当天的费用记录
+            Specification<ServiceOrdersView> specification=new Specification<ServiceOrdersView>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<ServiceOrdersView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+
+                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
+                        predicates_or.add(criteriaBuilder.like(root.get("enterpriseName"), "%"+queryEntity.getSearStr()+"%"));
+                        predicates_or.add(criteriaBuilder.like(root.get("contactPhone"), "%"+queryEntity.getSearStr()+"%"));
+                        predicates_or.add(criteriaBuilder.like(root.get("contactPerson"), "%"+queryEntity.getSearStr()+"%"));
+                        predicates_or.add(criteriaBuilder.like(root.get("servicePackageOrder"), "%"+queryEntity.getSearStr()+"%"));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getEnterpriseUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
+                    }
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
+            Page<ServiceOrdersView> servicePricesPage = serviceOrdersViewDao.findAll(specification,pageable);
+            List<ServiceOrdersView> content = servicePricesPage.getContent();
+            for (ServiceOrdersView servicePrices : content) {
+                if(servicePrices.getEmployeesLowerLimit()==0){
+                    servicePrices.setEnterpriseScale(servicePrices.getEmployeesUpperLimit()+"人以下");
+                }else if(servicePrices.getEmployeesUpperLimit()==0){
+                    servicePrices.setEnterpriseScale(servicePrices.getEmployeesLowerLimit()+"人以上");
+                }else{
+                    servicePrices.setEnterpriseScale(servicePrices.getEmployeesLowerLimit()+"-"+servicePrices.getEmployeesUpperLimit()+"人");
+                }
+            }
+
+            return new ResultCodeNew("0","",servicePricesPage);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
     }
 
 }
