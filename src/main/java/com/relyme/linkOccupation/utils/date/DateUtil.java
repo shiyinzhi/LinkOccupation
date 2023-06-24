@@ -1,5 +1,6 @@
 package com.relyme.linkOccupation.utils.date;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -314,6 +315,20 @@ public class DateUtil {
      */
     public static long dayDiff(Date date1, Date date2) {
         return (date2.getTime() - date1.getTime()) / 86400000;
+    }
+
+    /**
+     * 计算两个日期相差的小时，如果date2 > date1 返回正数，否则返回负数
+     */
+    public static long hourDiff(Date date1, Date date2) {
+        return (date2.getTime() - date1.getTime()) / 3600000;
+    }
+
+    /**
+     * 计算两个日期相差的小时，如果date2 > date1 返回正数，否则返回负数
+     */
+    public static double hourDiffScal(Date date1, Date date2,int scale) {
+        return new BigDecimal((date2.getTime() - date1.getTime())).divide(new BigDecimal(3600000),scale,BigDecimal.ROUND_HALF_UP).doubleValue();
     }
 
     /**
