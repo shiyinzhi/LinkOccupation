@@ -213,4 +213,28 @@ public interface MissionRecordDao extends ExtJpaRepository<MissionRecord, String
     @Query(value = "select c.* from (select sum(b.mission_price) order_price,b.employer_name from (select date_format(mission_record.update_time,'%Y-%m-%d') dd,mission.mission_price,CONCAT(IFNULL(enterprise_info.enterprise_short_name,''),IFNULL(individual_employers.individual_short_name,'')) as employer_name,CONCAT(IFNULL(enterprise_info.uuid,''),IFNULL(individual_employers.uuid,'')) as employer_uuid from mission_record left join enterprise_info on mission_record.employer_uuid = enterprise_info.uuid left join individual_employers on mission_record.employer_uuid = individual_employers.uuid inner join mission on mission_record.mission_uuid = mission.uuid where mission_record.update_time >=?1 and mission_record.update_time <=?2 and mission_record_status >= 7 and (mission_record.employer_type = 3 or mission_record.employer_type = 2)) b GROUP BY b.employer_uuid) c ORDER BY c.order_price desc LIMIT 0,?3",nativeQuery = true)
     Object[] getGoEmTopMoney(String startTime,String endTime,int topNum);
 
+
+    /**
+     * 查询简历投放总次数
+     * @param custAccountUuid
+     * @return
+     */
+    @Query(value = "SELECT count(*) FROM mission_record inner JOIN employee ON mission_record.employee_uuid = employee.uuid inner JOIN cust_account ON employee.cust_account_uuid = cust_account.uuid WHERE mission_record.active = 1 and cust_account.uuid = ?1",nativeQuery = true)
+    int getTotalPush(String custAccountUuid);
+
+    /**
+     * 查询简历投放录用次数
+     * @param custAccountUuid
+     * @return
+     */
+    @Query(value = "SELECT count(*) FROM mission_record inner JOIN employee ON mission_record.employee_uuid = employee.uuid inner JOIN cust_account ON employee.cust_account_uuid = cust_account.uuid WHERE mission_record.active = 1 and mission_record.mission_record_status >=5 and cust_account.uuid = ?1",nativeQuery = true)
+    int getTotalShure(String custAccountUuid);
+
+    /**
+     * 查询简历投放未录用次数
+     * @param custAccountUuid
+     * @return
+     */
+    @Query(value = "SELECT count(*) FROM mission_record inner JOIN employee ON mission_record.employee_uuid = employee.uuid inner JOIN cust_account ON employee.cust_account_uuid = cust_account.uuid WHERE mission_record.active = 1 and mission_record.mission_record_status =4 and cust_account.uuid = ?1",nativeQuery = true)
+    int getTotalNotShure(String custAccountUuid);
 }

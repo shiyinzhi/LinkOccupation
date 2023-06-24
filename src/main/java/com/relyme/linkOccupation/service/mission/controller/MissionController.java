@@ -4,13 +4,12 @@ package com.relyme.linkOccupation.service.mission.controller;
 import com.relyme.linkOccupation.service.employment_type.dao.EmploymentTypeDao;
 import com.relyme.linkOccupation.service.employment_type.domain.EmploymentType;
 import com.relyme.linkOccupation.service.mission.dao.MissionDao;
+import com.relyme.linkOccupation.service.mission.dao.MissionResumeViewDao;
 import com.relyme.linkOccupation.service.mission.dao.MissionViewDao;
-import com.relyme.linkOccupation.service.mission.domain.Mission;
-import com.relyme.linkOccupation.service.mission.domain.MissionActiveStatu;
-import com.relyme.linkOccupation.service.mission.domain.MissionStatu;
-import com.relyme.linkOccupation.service.mission.domain.MissionView;
+import com.relyme.linkOccupation.service.mission.domain.*;
 import com.relyme.linkOccupation.service.mission.dto.MissionDelDto;
 import com.relyme.linkOccupation.service.mission.dto.MissionQueryAllDto;
+import com.relyme.linkOccupation.service.mission.dto.MissionQueryResumeAllDto;
 import com.relyme.linkOccupation.service.mission.dto.MissionQueryUuidXDto;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
@@ -53,6 +52,9 @@ public class MissionController {
 
     @Autowired
     MissionViewDao missionViewDao;
+
+    @Autowired
+    MissionResumeViewDao missionResumeViewDao;
 
     @Autowired
     EmploymentTypeDao employmentTypeDao;
@@ -145,6 +147,109 @@ public class MissionController {
             return new ResultCode("00",ex.getMessage(),new ArrayList());
         }
     }
+
+
+    /**
+     * 条件查询雇员参与任务信息
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("条件查询雇员参与任务信息")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = MissionResumeView.class,notinclude = "sn,updateTime,page,pageSize,querySort,orderColumn,limit")
+    @RequestMapping(value="/findByConditionForResumeAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object findByConditionForResumeAPI(@Validated @RequestBody MissionQueryResumeAllDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            //查询默认当天的费用记录
+            Specification<MissionResumeView> specification=new Specification<MissionResumeView>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<MissionResumeView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
+                        predicates_or.add(criteriaBuilder.like(root.get("missionName"), "%"+queryEntity.getSearStr()+"%"));
+                        predicates_or.add(criteriaBuilder.like(root.get("typeName"), "%"+queryEntity.getSearStr()+"%"));
+                        predicates_or.add(criteriaBuilder.like(root.get("enterpriseName"), "%"+queryEntity.getSearStr()+"%"));
+                        predicates_or.add(criteriaBuilder.like(root.get("individualName"), "%"+queryEntity.getSearStr()+"%"));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getStartDate()) && StringUtils.isNotEmpty(queryEntity.getEndDate())){
+                        Date startDate = DateUtil.stringtoDate(queryEntity.getStartDate() + " 00:00:00", DateUtil.FORMAT_ONE);
+                        Date endDate = DateUtil.stringtoDate(queryEntity.getEndDate() + " 23:59:59", DateUtil.FORMAT_ONE);
+                        predicates.add(criteriaBuilder.between(root.get("addTime"), startDate,endDate));
+                    }
+
+                    if(queryEntity.getMissionStatus() != null){
+                        predicates.add(criteriaBuilder.equal(root.get("missionStatus"), queryEntity.getMissionStatus()));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getEmployeeCustAccountUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("employeeCustAccountUuid"), queryEntity.getEmployeeCustAccountUuid()));
+                    }
+
+                    //未录用
+                    if(queryEntity.getShureJoinStatus() != null && queryEntity.getShureJoinStatus()==0){
+                        predicates.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GYYQR.getCode()));
+                    }
+
+                    if(queryEntity.getShureJoinStatus() != null && queryEntity.getShureJoinStatus()==1){
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("missionRecordStatus"), MissionRecordStatu.SFYQR.getCode()));
+                    }
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+
+//                    condition_tData = criteriaBuilder.equal(root.get("enActive"), 1);
+//                    predicates_or.add(condition_tData);
+//
+//                    condition_tData = criteriaBuilder.equal(root.get("inActive"), 1);
+//                    predicates_or.add(condition_tData);
+//
+//                    condition_tData = criteriaBuilder.equal(root.get("enIsInBlacklist"), 0);
+//                    predicates_or.add(condition_tData);
+//
+//                    condition_tData = criteriaBuilder.equal(root.get("inIsInBlacklist"), 0);
+//                    predicates_or.add(condition_tData);
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
+            Page<MissionResumeView> missionResumeViewPage = missionResumeViewDao.findAll(specification,pageable);
+            List<MissionResumeView> content = missionResumeViewPage.getContent();
+            content.forEach(missionView -> {
+                EmploymentType byUuid = employmentTypeDao.findByUuid(missionView.getEmploymentTypeUuid());
+                if(byUuid != null){
+                    missionView.setEmploymentTypeName(byUuid.getTypeName());
+                }
+            });
+
+            return new ResultCodeNew("0","",missionResumeViewPage);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
 
 
     /**
