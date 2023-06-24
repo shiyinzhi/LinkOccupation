@@ -46,6 +46,14 @@ public class VideoManage extends BaseEntityForMysql {
     @Column(name = "cos_path",columnDefinition="TEXT")
     private String cosPath;
 
+
+    /**
+     * 套餐服务uuid
+     */
+    @Column(name = "service_package_uuid", length = 36)
+    private String servicePackageUuid;
+
+
     @Transient
     private String filePath;
 
@@ -107,5 +115,13 @@ public class VideoManage extends BaseEntityForMysql {
 
     public void setCosPath(String cosPath) {
         this.cosPath = cosPath;
+    }
+
+    public String getServicePackageUuid() {
+        return servicePackageUuid;
+    }
+
+    public void setServicePackageUuid(String servicePackageUuid) {
+        this.servicePackageUuid = servicePackageUuid;
     }
 }

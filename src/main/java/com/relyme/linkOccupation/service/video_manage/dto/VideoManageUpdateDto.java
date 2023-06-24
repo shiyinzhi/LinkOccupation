@@ -42,6 +42,12 @@ public class VideoManageUpdateDto {
     @ApiModelProperty("视频备注")
     private String remark;
 
+    /**
+     * 套餐服务uuid
+     */
+    @ApiModelProperty("套餐服务uuid")
+    private String servicePackageUuid;
+
     public String getUuid() {
         return uuid;
     }
@@ -80,5 +86,13 @@ public class VideoManageUpdateDto {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getServicePackageUuid() {
+        return servicePackageUuid;
+    }
+
+    public void setServicePackageUuid(String servicePackageUuid) {
+        this.servicePackageUuid = servicePackageUuid;
     }
 }
