@@ -11,10 +11,10 @@ import java.math.BigDecimal;
  * @author shiyinzhi
  */
 @Entity
-@Table(name = "enterprise_info",indexes = {
+@Table(name = "view_enterprise_info_service_package",indexes = {
         @Index(columnList = "uuid,enterprise_name")
 })
-public class EnterpriseInfo extends BaseEntityForMysql {
+public class EnterpriseInfoServicePackageView extends BaseEntityForMysql {
 
     /**
      * 企业名称
@@ -124,6 +124,12 @@ public class EnterpriseInfo extends BaseEntityForMysql {
      */
     @Column(name = "service_package_uuid", length = 36)
     private String servicePackageUuid;
+
+    /**
+     * 套餐名称
+     */
+    @Column(name = "package_name",length = 128)
+    private String packageName;
 
     @Transient
     private String businessLicensePath;
@@ -271,5 +277,13 @@ public class EnterpriseInfo extends BaseEntityForMysql {
 
     public void setServicePackageUuid(String servicePackageUuid) {
         this.servicePackageUuid = servicePackageUuid;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 }
