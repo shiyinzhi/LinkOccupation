@@ -17,9 +17,9 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "legal_advice",indexes = {
-        @Index(columnList = "uuid,user_account_uuid,enterprise_uuid")
+        @Index(columnList = "uuid,user_account_uuid,cust_account_uuid,enterprise_uuid")
 })
-public class legalAdvice extends BaseEntityForMysql {
+public class LegalAdvice extends BaseEntityForMysql {
 
 
     /**
@@ -27,6 +27,12 @@ public class legalAdvice extends BaseEntityForMysql {
      */
     @Column(name = "user_account_uuid", length = 36)
     private String userAccountUuid;
+
+    /**
+     * 用户uuid
+     */
+    @Column(name = "cust_account_uuid", length = 36)
+    private String custAccountUuid;
 
     /**
      * 企业UUID
@@ -47,7 +53,7 @@ public class legalAdvice extends BaseEntityForMysql {
      * 1处理中：已打电话联系，但用户还未点击满意
      * 2已处理：用户已评价
      */
-    @Column(name = "handle_status", length = 3,columnDefinition="tinyint default 1")
+    @Column(name = "handle_status", length = 3,columnDefinition="tinyint default 0")
     private int handleStatus;
 
     /**
@@ -57,6 +63,33 @@ public class legalAdvice extends BaseEntityForMysql {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @Column(name = "handle_time")
     private Date handleTime;
+
+
+    /**
+     * 是否超过24小时 0未超过 1超过
+     */
+    @Column(name = "exp_hour_twofour", length = 3,columnDefinition="tinyint default 0")
+    private int expHourTwofour;
+
+    /**
+     * 是否满意  0不满意 1满意
+     */
+    @Column(name = "handle_satisfied", length = 3,columnDefinition="tinyint default 0")
+    private int handleSatisfied;
+
+    /**
+     * 评价时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    @Column(name = "handle_satisfied_time")
+    private Date handleSatisfiedTime;
+
+    /**
+     * 处理时长 小时
+     */
+    @Column(name = "handle_hours", length = 11,scale = 2,columnDefinition="double default 0")
+    private double handleHours;
 
 
     public String getEnterpriseUuid() {
@@ -97,5 +130,45 @@ public class legalAdvice extends BaseEntityForMysql {
 
     public void setHandleTime(Date handleTime) {
         this.handleTime = handleTime;
+    }
+
+    public String getCustAccountUuid() {
+        return custAccountUuid;
+    }
+
+    public void setCustAccountUuid(String custAccountUuid) {
+        this.custAccountUuid = custAccountUuid;
+    }
+
+    public int getExpHourTwofour() {
+        return expHourTwofour;
+    }
+
+    public void setExpHourTwofour(int expHourTwofour) {
+        this.expHourTwofour = expHourTwofour;
+    }
+
+    public int getHandleSatisfied() {
+        return handleSatisfied;
+    }
+
+    public void setHandleSatisfied(int handleSatisfied) {
+        this.handleSatisfied = handleSatisfied;
+    }
+
+    public double getHandleHours() {
+        return handleHours;
+    }
+
+    public void setHandleHours(double handleHours) {
+        this.handleHours = handleHours;
+    }
+
+    public Date getHandleSatisfiedTime() {
+        return handleSatisfiedTime;
+    }
+
+    public void setHandleSatisfiedTime(Date handleSatisfiedTime) {
+        this.handleSatisfiedTime = handleSatisfiedTime;
     }
 }
