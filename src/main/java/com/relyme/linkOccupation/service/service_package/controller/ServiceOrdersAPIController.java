@@ -118,6 +118,7 @@ public class ServiceOrdersAPIController {
             }
 
             ServiceOrders serviceOrders = new ServiceOrders();
+            serviceOrders.setServiceSpecialOfferUuid(queryEntity.getServiceSpecialOfferUuid());
             new BeanCopyUtil().copyProperties(serviceOrders,queryEntity,true,new String[]{"sn"});
             String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 4);
             String dateTime = DateUtil.dateToString(new Date(),DateUtil.FORMAT_FOUR);
@@ -127,6 +128,99 @@ public class ServiceOrdersAPIController {
             ServiceOrdersBuyPriceDto serviceOrdersBuyPriceDto = new ServiceOrdersBuyPriceDto();
             new BeanCopyUtil().copyProperties(serviceOrdersBuyPriceDto,queryEntity,true,new String[]{"sn"});
             ServiceOrders caculateServiceOrderPrice = getCaculateServiceOrderPrice(serviceOrdersBuyPriceDto);
+            serviceOrders.setBuyMoney(caculateServiceOrderPrice.getBuyMoney());
+            serviceOrdersDao.save(serviceOrders);
+
+            //生成发票信息
+            if(serviceOrders.getIsInvoice() == 1){
+                Invoice invoice = new Invoice();
+                invoice.setEnterpriseUuid(serviceOrders.getEnterpriseUuid());
+                invoice.setServicePackageOrder(serviceOrders.getServicePackageOrder());
+                invoiceDao.save(invoice);
+            }
+
+            //更新企业订单uuid、套餐uuid
+            enterpriseInfo.setServiceOrdersUuid(serviceOrders.getUuid());
+            enterpriseInfo.setServicePackageUuid(byUuid.getUuid());
+            enterpriseInfoDao.save(enterpriseInfo);
+
+            return new ResultCodeNew("0","",serviceOrders);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 企业购买套餐服务 传入优惠活动类型
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("企业购买套餐服务 传入优惠活动类型")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrders.class,include = "uuid")
+    @RequestMapping(value="/buyServicePackageWithOutSpeUuid",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object buyServicePackageWithOutSpeUuid(@Validated @RequestBody ServiceOrdersDto queryEntity, HttpServletRequest request) {
+        try{
+
+            if(StringUtils.isEmpty(queryEntity.getServicePackageUuid())){
+                throw new Exception("套餐uuid不能为空！");
+            }
+
+            ServicePackage byUuid = servicePackageDao.findByUuid(queryEntity.getServicePackageUuid());
+            if(byUuid == null){
+                throw new Exception("套餐信息异常！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
+                throw new Exception("企业uuid不能为空！");
+            }
+
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(queryEntity.getEnterpriseUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getServicePricesUuid())){
+                throw new Exception("套餐价格uuid不能为空！");
+            }
+
+            ServicePrices servicePrices = servicePricesDao.findByUuid(queryEntity.getServicePricesUuid());
+            if(servicePrices == null){
+                throw new Exception("套餐价格信息异常！");
+            }
+
+            List<ServiceSpecialOffer> serviceSpecialOfferList = null;
+            //通过套餐uuid和服务类型去查找优惠信息
+            if(queryEntity.getSpecialType() != null && queryEntity.getSpecialType() == 0){
+                serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndActive(servicePrices.getServicePackageUuid(), 0,1);
+            }
+            //通过套餐uuid和优惠类型、购买年限查找信息
+            else{
+                serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndBuyYearsAndActive(servicePrices.getServicePackageUuid(),1,queryEntity.getBuyNum(),1);
+            }
+            if(serviceSpecialOfferList == null || serviceSpecialOfferList.size() == 0){
+                throw new Exception("优惠信息异常！");
+            }
+
+            if(serviceSpecialOfferList.size() > 1){
+                throw new Exception("选择优惠信息存在多个！");
+            }
+
+            ServiceSpecialOffer serviceSpecialOffer = serviceSpecialOfferList.get(0);
+
+            ServiceOrders serviceOrders = new ServiceOrders();
+            serviceOrders.setServiceSpecialOfferUuid(serviceSpecialOffer.getUuid());
+            new BeanCopyUtil().copyProperties(serviceOrders,queryEntity,true,new String[]{"sn"});
+            String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 4);
+            String dateTime = DateUtil.dateToString(new Date(),DateUtil.FORMAT_FOUR);
+            serviceOrders.setServicePackageOrder(dateTime+uuid);
+
+            //计算价格
+            ServiceOrdersBuyPriceDto serviceOrdersBuyPriceDto = new ServiceOrdersBuyPriceDto();
+            new BeanCopyUtil().copyProperties(serviceOrdersBuyPriceDto,queryEntity,true,new String[]{"sn"});
+            ServiceOrders caculateServiceOrderPrice = getCaculateServiceOrderPriceWithOutSpecUuid(serviceOrdersBuyPriceDto);
             serviceOrders.setBuyMoney(caculateServiceOrderPrice.getBuyMoney());
             serviceOrdersDao.save(serviceOrders);
 
@@ -162,7 +256,8 @@ public class ServiceOrdersAPIController {
     @RequestMapping(value="/buyPrices",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object buyPrices(@Validated @RequestBody ServiceOrdersBuyPriceDto queryEntity, HttpServletRequest request) {
         try{
-            ServiceOrders serviceOrders = getCaculateServiceOrderPrice(queryEntity);
+//            ServiceOrders serviceOrders = getCaculateServiceOrderPrice(queryEntity);
+            ServiceOrders serviceOrders = getCaculateServiceOrderPriceWithOutSpecUuid(queryEntity);
             return new ResultCodeNew("0","",serviceOrders);
         }catch(Exception ex){
             ex.printStackTrace();
@@ -171,7 +266,7 @@ public class ServiceOrdersAPIController {
     }
 
     /**
-     * 计算购买价格
+     * 计算购买价格  传入优惠uuid
      * @param queryEntity
      * @return
      * @throws Exception
@@ -208,12 +303,12 @@ public class ServiceOrdersAPIController {
         //按月
         if(queryEntity.getBuyType() == 1){
             price = servicePrices.getMonthPrice();
-            buyMoney = servicePrices.getMonthPrice().multiply(new BigDecimal(queryEntity.getBuNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
+            buyMoney = servicePrices.getMonthPrice().multiply(new BigDecimal(queryEntity.getBuyNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
         }
         //按年
         else if(queryEntity.getBuyType() == 2){
             price = servicePrices.getYearPrice();
-            buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
+            buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuyNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
         }
 
         //优惠
@@ -238,7 +333,95 @@ public class ServiceOrdersAPIController {
             }
             //充值包  购买年数 赠送月数
             else if(serviceSpecialOffer.getSpecialType() == 1){
-                buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuNum()));
+                buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuyNum()));
+            }
+        }
+
+        serviceOrders.setBuyMoney(buyMoney);
+        return serviceOrders;
+    }
+
+    /**
+     * 计算购买价格  传入优惠类型
+     * @param queryEntity
+     * @return
+     * @throws Exception
+     */
+    private ServiceOrders getCaculateServiceOrderPriceWithOutSpecUuid(ServiceOrdersBuyPriceDto queryEntity) throws Exception {
+        if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
+            throw new Exception("企业uuid不能为空！");
+        }
+
+        EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(queryEntity.getEnterpriseUuid());
+        if(enterpriseInfo == null){
+            throw new Exception("企业信息异常！");
+        }
+
+        if(StringUtils.isEmpty(queryEntity.getServicePricesUuid())){
+            throw new Exception("套餐价格uuid不能为空！");
+        }
+
+        ServicePrices servicePrices = servicePricesDao.findByUuid(queryEntity.getServicePricesUuid());
+        if(servicePrices == null){
+            throw new Exception("套餐价格信息异常！");
+        }
+
+        List<ServiceSpecialOffer> serviceSpecialOfferList = null;
+        //通过套餐uuid和服务类型去查找优惠信息
+        if(queryEntity.getSpecialType() != null && queryEntity.getSpecialType() == 0){
+            serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndActive(servicePrices.getServicePackageUuid(), 0,1);
+        }
+        //通过套餐uuid和优惠类型、购买年限查找信息
+        else{
+            serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndBuyYearsAndActive(servicePrices.getServicePackageUuid(),1,queryEntity.getBuyNum(),1);
+        }
+        if(serviceSpecialOfferList == null || serviceSpecialOfferList.size() == 0){
+            throw new Exception("优惠信息异常！");
+        }
+
+        if(serviceSpecialOfferList.size() > 1){
+            throw new Exception("选择优惠信息存在多个！");
+        }
+
+        ServiceSpecialOffer serviceSpecialOffer = serviceSpecialOfferList.get(0);
+
+        ServiceOrders serviceOrders = new ServiceOrders();
+        BigDecimal buyMoney = new BigDecimal(0);
+        BigDecimal price = new BigDecimal(0);
+        //按月
+        if(queryEntity.getBuyType() == 1){
+            price = servicePrices.getMonthPrice();
+            buyMoney = servicePrices.getMonthPrice().multiply(new BigDecimal(queryEntity.getBuyNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
+        }
+        //按年
+        else if(queryEntity.getBuyType() == 2){
+            price = servicePrices.getYearPrice();
+            buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuyNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
+        }
+
+        //优惠
+        if(serviceSpecialOffer != null){
+            //体验包  折扣 优惠月数 优惠次数
+            if(serviceSpecialOffer.getSpecialType() == 0){
+                if(serviceSpecialOffer.getSpecialCounts() !=0){
+                    //查询企业购买体验包的次数
+                    int experiencePackCount = serviceOrdersDao.getExperiencePackCount(queryEntity.getEnterpriseUuid());
+                    if(experiencePackCount >= serviceSpecialOffer.getSpecialCounts()){
+                        throw new Exception("购买体验包次数已达上限！");
+                    }else{
+                        BigDecimal disCountMoney = servicePrices.getMonthPrice()
+                                .multiply(new BigDecimal(serviceSpecialOffer.getSpecialMonthes()))
+                                .multiply((serviceSpecialOffer.getServiceDiscounts().divide(new BigDecimal(100)))).setScale(2,BigDecimal.ROUND_HALF_UP);
+                        buyMoney = buyMoney.subtract(disCountMoney);
+                        if(buyMoney.compareTo(new BigDecimal(0)) <0){
+                            buyMoney = new BigDecimal(0);
+                        }
+                    }
+                }
+            }
+            //充值包  购买年数 赠送月数
+            else if(serviceSpecialOffer.getSpecialType() == 1){
+                buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuyNum()));
             }
         }
 

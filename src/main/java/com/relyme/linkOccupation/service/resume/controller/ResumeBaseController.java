@@ -78,7 +78,7 @@ public class ResumeBaseController {
 //                    List<Predicate> predicates_or = new ArrayList<>();
 //                    Predicate condition_tData = null;
 //
-//                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
+//                    if(NumberUtils.isNotEmpty(queryEntity.getSearStr())){
 //                        predicates_or.add(criteriaBuilder.like(root.get("name"), "%"+queryEntity.getSearStr()+"%"));
 //                        predicates_or.add(criteriaBuilder.like(root.get("contactPhone"), "%"+queryEntity.getSearStr()+"%"));
 //                    }

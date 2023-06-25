@@ -829,7 +829,7 @@ public class MissionAPIController {
                         predicates_or.add(criteriaBuilder.like(root.get("missionName"), "%"+queryEntity.getSearStr()+"%"));
                     }
 
-//                    if(StringUtils.isNotEmpty(queryEntity.getStartDate()) && StringUtils.isNotEmpty(queryEntity.getEndDate())){
+//                    if(NumberUtils.isNotEmpty(queryEntity.getStartDate()) && NumberUtils.isNotEmpty(queryEntity.getEndDate())){
 //                        Date startDate = DateUtil.stringtoDate(queryEntity.getStartDate() + " 00:00:00", DateUtil.FORMAT_ONE);
 //                        Date endDate = DateUtil.stringtoDate(queryEntity.getEndDate() + " 23:59:59", DateUtil.FORMAT_ONE);
 //                        predicates.add(criteriaBuilder.between(root.get("deliverEndTime"), startDate,endDate));

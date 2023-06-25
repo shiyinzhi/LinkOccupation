@@ -5,16 +5,11 @@ import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.service_package.dao.ServiceSpecialOfferDao;
 import com.relyme.linkOccupation.service.service_package.domain.ServiceSpecialOffer;
-import com.relyme.linkOccupation.service.service_package.dto.ServiceSpecialOfferDto;
+import com.relyme.linkOccupation.service.service_package.dto.ServiceSpecialOfferDescQueryDto;
 import com.relyme.linkOccupation.service.service_package.dto.ServiceSpecialOfferQueryDto;
-import com.relyme.linkOccupation.service.service_package.dto.ServiceSpecialOfferUuidDto;
-import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
-import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
-import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
 import com.relyme.linkOccupation.utils.bean.ResultCodeNew;
-import com.relyme.linkOccupation.utils.string.NumberUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -33,17 +28,15 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author shiyinzhi
  */
 @RestController
-@Api(value = "套餐服务优惠信息", tags = "套餐服务优惠信息")
-@RequestMapping("servicespecialoffer")
-public class ServiceSpecialOfferController {
+@Api(value = "套餐服务优惠信息API", tags = "套餐服务优惠信息API")
+@RequestMapping("api/servicespecialoffer")
+public class ServiceSpecialOfferAPIController {
 
     @Autowired
     ServiceSpecialOfferDao serviceSpecialOfferDao;
@@ -53,56 +46,6 @@ public class ServiceSpecialOfferController {
 
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
-
-
-    /**
-     * 添加或修改
-     * @return
-     */
-    @ApiOperation("添加或修改")
-    @JSON(type = ServiceSpecialOffer.class  , include="uuid")
-    @RequestMapping(value="/update",method = RequestMethod.POST,produces={"application/json;charset=UTF-8","text/html;charset=UTF-8"})
-    public Object update(@Validated @RequestBody ServiceSpecialOfferDto entity, HttpServletRequest request) {
-        try{
-
-
-            UserAccount userAccount = LoginBean.getUserAccount(request);
-            if(userAccount == null){
-                throw new Exception("请先登录！");
-            }
-
-            if(StringUtils.isEmpty(entity.getServicePackageUuid())){
-                throw new Exception("套餐不能为空！");
-            }
-
-            ServiceSpecialOffer byUuid = null;
-            if(StringUtils.isNotEmpty(entity.getUuid())){
-                byUuid = serviceSpecialOfferDao.findByUuid(entity.getUuid());
-                if(byUuid != null){
-                    new BeanCopyUtil().copyProperties(byUuid,entity,true,new String[]{"sn"});
-                }
-            }else{
-                byUuid = new ServiceSpecialOffer();
-                new BeanCopyUtil().copyProperties(byUuid,entity,true,new String[]{"sn","uuid"});
-            }
-            //体验包
-            if(entity.getSpecialType() == 0){
-                BigDecimal bigDecimal = byUuid.getServiceDiscounts().multiply(new BigDecimal(100)).setScale(0,BigDecimal.ROUND_HALF_UP);
-                String a = bigDecimal.toString();
-                String s = NumberUtils.convertNumToCN(a).replace("十","");
-                byUuid.setRemark("可享受"+byUuid.getSpecialMonthes()+"个月"+s+"折尝鲜价；此价格仅可享受一次");
-            }else if(entity.getSpecialType() == 1){
-                byUuid.setRemark("购买"+byUuid.getBuyYears()+"年加赠"+byUuid.getFreeMonthes()+"个月");
-            }
-            byUuid.setUserAccountUuid(userAccount.getUuid());
-            serviceSpecialOfferDao.save(byUuid);
-
-            return new ResultCodeNew("0","更新成功！",byUuid);
-        }catch(Exception ex){
-            ex.printStackTrace();
-            return new ResultCodeNew("00",ex.getMessage());
-        }
-    }
 
     /**
      * 条件查询信息
@@ -115,11 +58,6 @@ public class ServiceSpecialOfferController {
     @RequestMapping(value="/findByConditionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByConditionAPI(@Validated @RequestBody ServiceSpecialOfferQueryDto queryEntity, HttpServletRequest request) {
         try{
-
-            UserAccount userAccount = LoginBean.getUserAccount(request);
-            if(userAccount == null){
-                throw new Exception("请先登录！");
-            }
 
             //查询默认当天的费用记录
             Specification<ServiceSpecialOffer> specification=new Specification<ServiceSpecialOffer>() {
@@ -163,36 +101,82 @@ public class ServiceSpecialOfferController {
 
 
     /**
-     * 删除
+     * 条件查询信息 服务简要说明
+     * @param queryEntity
      * @return
      */
-    @ApiOperation("删除")
-    @JSON(type = ServiceSpecialOffer.class  , include="uuid")
-    @RequestMapping(value="/delete",method = RequestMethod.POST,produces={"application/json;charset=UTF-8","text/html;charset=UTF-8"})
-    public Object delete(@Validated @RequestBody ServiceSpecialOfferUuidDto entity, HttpServletRequest request) {
+    @ApiOperation("条件查询信息 服务简要说明")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceSpecialOffer.class,include = "specialType,remark")
+    @RequestMapping(value="/findByConditionDescAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object findByConditionDescAPI(@Validated @RequestBody ServiceSpecialOfferDescQueryDto queryEntity, HttpServletRequest request) {
         try{
 
+            //查询默认当天的费用记录
+            Specification<ServiceSpecialOffer> specification=new Specification<ServiceSpecialOffer>() {
+                private static final long serialVersionUID = 1L;
 
-            UserAccount userAccount = LoginBean.getUserAccount(request);
-            if(userAccount == null){
-                throw new Exception("请先登录！");
+                @Override
+                public Predicate toPredicate(Root<ServiceSpecialOffer> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+
+                    if(StringUtils.isNotEmpty(queryEntity.getServicePackageUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("servicePackageUuid"), queryEntity.getServicePackageUuid()));
+                    }
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(0, 100, sort);
+            Page<ServiceSpecialOffer> serviceSpecialOfferPage = serviceSpecialOfferDao.findAll(specification,pageable);
+            List<ServiceSpecialOffer> content = serviceSpecialOfferPage.getContent();
+            List<ServiceSpecialOffer> returnResultList = new ArrayList<>();
+            Map<Integer,StringBuffer> map = new HashMap<>();
+            Set<Integer> specialTypes = new HashSet<>();
+            content.forEach(serviceSpecialOffer -> {
+                specialTypes.add(serviceSpecialOffer.getSpecialType());
+            });
+
+            ServiceSpecialOffer serviceSpecialOffer = null;
+            for (Integer specialType : specialTypes) {
+                serviceSpecialOffer = new ServiceSpecialOffer();
+                serviceSpecialOffer.setSpecialType(specialType);
+                returnResultList.add(serviceSpecialOffer);
+
+                map.put(specialType,new StringBuffer().append("在项目推广阶段，"));
             }
 
-            if(StringUtils.isEmpty(entity.getUuid())){
-                throw new Exception("套餐服务优惠uuid不能为空！");
-            }
+            StringBuilder sb_1 = new StringBuilder();
+            StringBuilder sb_return = new StringBuilder();
+            content.forEach(serviceSpecialOffer1 -> {
+                map.get(serviceSpecialOffer1.getSpecialType()).append(serviceSpecialOffer1.getRemark()).append(";");
+            });
 
-            ServiceSpecialOffer byUuid = serviceSpecialOfferDao.findByUuid(entity.getUuid());
-            if(byUuid == null){
-                throw new Exception("套餐服务优惠信息异常！");
-            }
-            byUuid.setActive(0);
-            serviceSpecialOfferDao.save(byUuid);
+            returnResultList.forEach(serviceSpecialOffer2->{
+                serviceSpecialOffer2.setRemark(map.get(serviceSpecialOffer2.getSpecialType()).toString());
+            });
 
-            return new ResultCodeNew("0","更新成功！",byUuid);
+
+            return new ResultCodeNew("0","",returnResultList,returnResultList.size());
         }catch(Exception ex){
             ex.printStackTrace();
-            return new ResultCodeNew("00",ex.getMessage());
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
         }
     }
+
 }

@@ -99,7 +99,7 @@ public class CustAccountAPIController {
 //            if(custAccount.getProvince() != null && custAccount.getCity() != null && custAccount.getCountry() != null){
 //                custAccount.setCurrentAddress(custAccount.getProvince()+","+custAccount.getCity()+","+custAccount.getCountry());
 //            }
-//            if(StringUtils.isNotEmpty(custAccount.getCityCode())){
+//            if(NumberUtils.isNotEmpty(custAccount.getCityCode())){
 //                RegionCode cityCode = regionCodeDao.findByCityCode(custAccount.getCityCode());
 //                if(cityCode != null){
 //                    custAccount.setCurrentAddress(cityCode.getCityName());
@@ -179,7 +179,7 @@ public class CustAccountAPIController {
 //            }
 //            roster.setEnterpriseName(enterpriseInfo.getEnterpriseName());
 //
-//            if(StringUtils.isEmpty(roster.getPostUuid())){
+//            if(NumberUtils.isEmpty(roster.getPostUuid())){
 //                throw new Exception("请先进行岗位设置！");
 //            }
 //

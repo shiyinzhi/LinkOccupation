@@ -37,10 +37,16 @@ public class ServiceOrdersBuyPriceDto {
     private int buyType;
 
     /**
+     * 优惠活动类型 0 体验包 1 充值好礼
+     */
+    @ApiModelProperty("优惠活动类型 0 体验包 1 充值好礼")
+    private Integer specialType;
+
+    /**
      * 购买数量
      */
     @ApiModelProperty("购买数量")
-    private int buNum;
+    private int buyNum;
 
 
     public String getServiceSpecialOfferUuid() {
@@ -67,12 +73,12 @@ public class ServiceOrdersBuyPriceDto {
         this.servicePricesUuid = servicePricesUuid;
     }
 
-    public int getBuNum() {
-        return buNum;
+    public int getBuyNum() {
+        return buyNum;
     }
 
-    public void setBuNum(int buNum) {
-        this.buNum = buNum;
+    public void setBuyNum(int buyNum) {
+        this.buyNum = buyNum;
     }
 
     public String getEnterpriseUuid() {
@@ -81,5 +87,13 @@ public class ServiceOrdersBuyPriceDto {
 
     public void setEnterpriseUuid(String enterpriseUuid) {
         this.enterpriseUuid = enterpriseUuid;
+    }
+
+    public Integer getSpecialType() {
+        return specialType;
+    }
+
+    public void setSpecialType(Integer specialType) {
+        this.specialType = specialType;
     }
 }

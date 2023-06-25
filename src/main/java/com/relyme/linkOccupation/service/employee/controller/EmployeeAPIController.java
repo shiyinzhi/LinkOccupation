@@ -91,7 +91,7 @@ public class EmployeeAPIController {
                 throw new Exception("用户uuid 为空！");
             }
 
-//            if(StringUtils.isEmpty(entity.getEmploymentTypeUuid())){
+//            if(NumberUtils.isEmpty(entity.getEmploymentTypeUuid())){
 //                throw new Exception("工种uuid 为空！");
 //            }
 

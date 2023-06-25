@@ -37,6 +37,7 @@ import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Date;
 import java.util.UUID;
 import static com.relyme.linkOccupation.utils.file.ExcelFile.isRowEmpty;
 
@@ -101,6 +102,10 @@ public class Test {
         System.out.println(MD5Util.getMD5String("123456"));
 
         System.out.println(Test.class.getClassLoader());
+
+        Date date = DateUtil.stringtoDate("2023-06-23 18:55:00",DateUtil.FORMAT_ONE);
+        double v = DateUtil.hourDiffScal(date, new Date(), 2);
+        System.out.println("v = " + v);
 
 //        redExel();
 

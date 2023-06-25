@@ -41,7 +41,7 @@ public class VersionControlController {
     public Object updateVersion(@Validated @RequestBody VersionControlUpdateDto entity, HttpServletRequest request) {
         try{
 
-//            if (StringUtils.isEmpty(entity.getUuid())){
+//            if (NumberUtils.isEmpty(entity.getUuid())){
 //                throw new Exception("uuid为空！");
 //            }
 

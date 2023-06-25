@@ -328,7 +328,7 @@ public class WechatInfoController {
                 custAccount.setUnionId(wechatPhoneDto.getUnionid());
 
 //                //推荐人通过sn查询uuid
-//                if(StringUtils.isNotEmpty(wechatPhoneDto.getReferrerUuid())){
+//                if(NumberUtils.isNotEmpty(wechatPhoneDto.getReferrerUuid())){
 //                    CustAccount bySn = custAccountDao.findBySn(Long.parseLong(wechatPhoneDto.getReferrerUuid()));
 //                    custAccount.setReferrerUuid(bySn.getUuid());
 //                }
@@ -372,7 +372,7 @@ public class WechatInfoController {
                 throw new Exception("page不能为空！");
             }
 
-//            if(StringUtils.isEmpty(qrCodeDto.getScene())){
+//            if(NumberUtils.isEmpty(qrCodeDto.getScene())){
 //                throw new Exception("二维码内容不能为空！");
 //            }
 
