@@ -138,7 +138,7 @@ public class ComplaintAPIController {
      */
     @ApiOperation("条件查询信息")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = ComplaintView.class,notinclude = "sn,updateTime,active,page,pageSize,querySort,orderColumn,limit")
+    @JSON(type = ComplaintView.class,notinclude = "sn,updateTime,active,page,pageSize,querySort,orderColumn,limit,expHourTwofour")
     @RequestMapping(value="/findByConditionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByConditionAPI(@Validated @RequestBody ComplaintAPIQueryDto queryEntity, HttpServletRequest request) {
         try{

@@ -367,6 +367,7 @@ public class ServiceOrdersAPIController {
         }
 
         List<ServiceSpecialOffer> serviceSpecialOfferList = null;
+        ServiceSpecialOffer serviceSpecialOffer = null;
         //通过套餐uuid和服务类型去查找优惠信息
         if(queryEntity.getSpecialType() != null && queryEntity.getSpecialType() == 0){
             serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndActive(servicePrices.getServicePackageUuid(), 0,1);
@@ -375,15 +376,18 @@ public class ServiceOrdersAPIController {
         else{
             serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndBuyYearsAndActive(servicePrices.getServicePackageUuid(),1,queryEntity.getBuyNum(),1);
         }
-        if(serviceSpecialOfferList == null || serviceSpecialOfferList.size() == 0){
-            throw new Exception("优惠信息异常！");
-        }
 
-        if(serviceSpecialOfferList.size() > 1){
-            throw new Exception("选择优惠信息存在多个！");
-        }
+        if (queryEntity.getSpecialType() != null) {
+            if(serviceSpecialOfferList == null || serviceSpecialOfferList.size() == 0){
+                throw new Exception("优惠信息异常！");
+            }
 
-        ServiceSpecialOffer serviceSpecialOffer = serviceSpecialOfferList.get(0);
+            if(serviceSpecialOfferList.size() > 1){
+                throw new Exception("选择优惠信息存在多个！");
+            }
+
+            serviceSpecialOffer = serviceSpecialOfferList.get(0);
+        }
 
         ServiceOrders serviceOrders = new ServiceOrders();
         BigDecimal buyMoney = new BigDecimal(0);
@@ -422,6 +426,12 @@ public class ServiceOrdersAPIController {
             //充值包  购买年数 赠送月数
             else if(serviceSpecialOffer.getSpecialType() == 1){
                 buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuyNum()));
+            }
+        }else{
+            if(queryEntity.getBuyType() == 1){
+                buyMoney = servicePrices.getMonthPrice().multiply(new BigDecimal(queryEntity.getBuyNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
+            }else if(queryEntity.getBuyType() == 2){
+                buyMoney = servicePrices.getYearPrice().multiply(new BigDecimal(queryEntity.getBuyNum())).setScale(2,BigDecimal.ROUND_HALF_UP);
             }
         }
 

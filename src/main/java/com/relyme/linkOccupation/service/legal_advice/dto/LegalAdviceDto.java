@@ -29,6 +29,18 @@ public class LegalAdviceDto {
     @ApiModelProperty("咨询内容")
     private String legalContent;
 
+    /**
+     * 手机号码
+     */
+    @ApiModelProperty("手机号码")
+    private String mobile;
+
+    /**
+     * 姓名
+     */
+    @ApiModelProperty("姓名")
+    private String name;
+
 
     public String getEnterpriseUuid() {
         return enterpriseUuid;
@@ -52,5 +64,21 @@ public class LegalAdviceDto {
 
     public void setCustAccountUuid(String custAccountUuid) {
         this.custAccountUuid = custAccountUuid;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

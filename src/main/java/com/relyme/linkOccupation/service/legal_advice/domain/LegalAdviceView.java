@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.relyme.linkOccupation.utils.bean.BaseEntityForMysql;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -95,6 +92,9 @@ public class LegalAdviceView extends BaseEntityForMysql {
     @Column(name = "exp_hour_twofour", length = 3,columnDefinition="tinyint default 0")
     private int expHourTwofour;
 
+    @Transient
+    private int expHourTwofourExp;
+
     /**
      * 是否满意  0不满意 1满意
      */
@@ -102,10 +102,30 @@ public class LegalAdviceView extends BaseEntityForMysql {
     private int handleSatisfied;
 
     /**
+     * 评价时间
+     */
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    @Column(name = "handle_satisfied_time")
+    private Date handleSatisfiedTime;
+
+    /**
      * 处理时长 小时
      */
     @Column(name = "handle_hours", length = 11,scale = 2,columnDefinition="double default 0")
     private double handleHours;
+
+    /**
+     * 手机号码
+     */
+    @Column(name = "mobile",length = 15)
+    private String mobile;
+
+    /**
+     * 姓名
+     */
+    @Column(name = "legal_advice_name",length = 128)
+    private String name;
 
 
     public String getEnterpriseUuid() {
@@ -210,5 +230,37 @@ public class LegalAdviceView extends BaseEntityForMysql {
 
     public void setHandleHours(double handleHours) {
         this.handleHours = handleHours;
+    }
+
+    public Date getHandleSatisfiedTime() {
+        return handleSatisfiedTime;
+    }
+
+    public void setHandleSatisfiedTime(Date handleSatisfiedTime) {
+        this.handleSatisfiedTime = handleSatisfiedTime;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getExpHourTwofourExp() {
+        return expHourTwofourExp;
+    }
+
+    public void setExpHourTwofourExp(int expHourTwofourExp) {
+        this.expHourTwofourExp = expHourTwofourExp;
     }
 }

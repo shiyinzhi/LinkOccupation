@@ -9,8 +9,6 @@ import com.relyme.linkOccupation.service.legal_advice.domain.LegalAdviceView;
 import com.relyme.linkOccupation.service.legal_advice.dto.LegalAdviceAPIQueryDto;
 import com.relyme.linkOccupation.service.legal_advice.dto.LegalAdviceDto;
 import com.relyme.linkOccupation.service.legal_advice.dto.LegalAdviceSatisfiedUuidDto;
-import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
-import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
 import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
@@ -140,12 +138,6 @@ public class LegalAdviceAPIController {
     @RequestMapping(value="/findByConditionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByConditionAPI(@Validated @RequestBody LegalAdviceAPIQueryDto queryEntity, HttpServletRequest request) {
         try{
-
-            UserAccount userAccount = LoginBean.getUserAccount(request);
-            if(userAccount == null){
-                throw new Exception("请先登录！");
-            }
-
             //查询默认当天的费用记录
             Specification<LegalAdviceView> specification=new Specification<LegalAdviceView>() {
                 private static final long serialVersionUID = 1L;

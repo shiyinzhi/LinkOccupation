@@ -157,11 +157,11 @@ public class LegalAdviceController {
             Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
             Page<LegalAdviceView> legalAdviceViewPage = legalAdviceViewDao.findAll(specification,pageable);
             List<LegalAdviceView> content = legalAdviceViewPage.getContent();
-            content.forEach(legalAdviceView->{
+            for (LegalAdviceView legalAdviceView : content) {
                 if(DateUtil.dayDiff(legalAdviceView.getAddTime(),new Date()) >= 1){
-                    legalAdviceView.setExpHourTwofour(1);
+                    legalAdviceView.setExpHourTwofourExp(1);
                 }
-            });
+            }
             return new ResultCodeNew("0","",legalAdviceViewPage);
         }catch(Exception ex){
             ex.printStackTrace();

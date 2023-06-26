@@ -84,6 +84,18 @@ public class Complaint extends BaseEntityForMysql {
     @Column(name = "handle_hours", length = 11,scale = 2,columnDefinition="double default 0")
     private double handleHours;
 
+    /**
+     * 手机号码
+     */
+    @Column(name = "mobile",length = 15)
+    private String mobile;
+
+    /**
+     * 姓名
+     */
+    @Column(name = "name",length = 128)
+    private String name;
+
 
     public String getEnterpriseUuid() {
         return enterpriseUuid;
@@ -155,5 +167,21 @@ public class Complaint extends BaseEntityForMysql {
 
     public void setHandleHours(double handleHours) {
         this.handleHours = handleHours;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

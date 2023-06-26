@@ -23,4 +23,11 @@ public interface ServicePricesDao extends ExtJpaRepository<ServicePrices, String
      */
     List<ServicePrices> findByServicePackageUuidOrderByMonthPriceAsc(String servicePackageUuid);
 
+    /**
+     * 根据状态查询
+     * @param active
+     * @return
+     */
+    List<ServicePrices> findByActiveOrderByEmployeesLowerLimit(int active);
+
 }

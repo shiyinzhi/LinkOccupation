@@ -40,4 +40,11 @@ public interface EnterpriseInfoDao extends ExtJpaRepository<EnterpriseInfo, Stri
      */
     @Query(value = "select  count(*) from enterprise_info where active=1",nativeQuery = true)
     int getEnterpriseInfoCount();
+
+    /**
+     * 通过公司名称查询公司信息
+     * @param enterpriseName
+     * @return
+     */
+    List<EnterpriseInfo> findByEnterpriseName(String enterpriseName);
 }
