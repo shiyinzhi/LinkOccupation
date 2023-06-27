@@ -220,7 +220,7 @@ public class ServicePackageController {
             //普通用户
             ServicePackage servicePackage = new ServicePackage();
             servicePackage.setPackageName("普通用户");
-            servicePackage.setUuid(null);
+            servicePackage.setUuid("00000000");
             tempServicePackage.add(servicePackage);
 
             return new ResultCodeNew("0","",tempServicePackage,servicePackagePage.getTotalElements()+1);

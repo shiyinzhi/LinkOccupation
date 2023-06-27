@@ -3,6 +3,8 @@ package com.relyme.linkOccupation.service.video_manage.controller;
 
 import com.relyme.linkOccupation.config.COSConfig;
 import com.relyme.linkOccupation.config.SysConfig;
+import com.relyme.linkOccupation.service.service_package.dao.ServicePackageDao;
+import com.relyme.linkOccupation.service.service_package.domain.ServicePackage;
 import com.relyme.linkOccupation.service.useraccount.dao.UserAccountDao;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
@@ -38,6 +40,7 @@ import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -54,6 +57,9 @@ public class VideoManageController {
 
     @Autowired
     UserAccountDao userAccountDao;
+
+    @Autowired
+    ServicePackageDao servicePackageDao;
 
 
     /**
@@ -121,6 +127,21 @@ public class VideoManageController {
                     videoManage.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+videoManage.getFileName());
                 }else{
                     videoManage.setFilePath(videoManage.getCosPath());
+                }
+
+                if(StringUtils.isNotEmpty(videoManage.getServicePackageUuid())){
+                    List<String> list = Arrays.asList(videoManage.getServicePackageUuid().split(","));
+                    List<ServicePackage> byUuidIn = servicePackageDao.findByUuidIn(list);
+                    StringBuilder sb = new StringBuilder();
+                    if(videoManage.getServicePackageUuid().contains("00000000")){
+                        sb.append("普通用户").append(",");
+                    }
+                    for (ServicePackage servicePackage : byUuidIn) {
+                        sb.append(servicePackage.getPackageName()).append("企业用户").append(",");
+                    }
+                    if(StringUtils.isNotEmpty(sb.toString())){
+                        videoManage.setUserType(sb.toString().substring(0, sb.toString().lastIndexOf(',')));
+                    }
                 }
             });
 
@@ -261,5 +282,4 @@ public class VideoManageController {
             return new ResultCodeNew("00",ex.getMessage());
         }
     }
-
 }

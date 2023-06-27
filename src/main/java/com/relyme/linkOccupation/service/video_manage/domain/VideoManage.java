@@ -48,9 +48,9 @@ public class VideoManage extends BaseEntityForMysql {
 
 
     /**
-     * 套餐服务uuid
+     * 套餐服务uuid 多个使用逗号分隔
      */
-    @Column(name = "service_package_uuid", length = 36)
+    @Column(name = "service_package_uuid", length = 512)
     private String servicePackageUuid;
 
 
@@ -59,6 +59,9 @@ public class VideoManage extends BaseEntityForMysql {
 
     @Transient
     private int count;
+
+    @Transient
+    private String userType;
 
 
     public String getUserAccountUuid() {
@@ -123,5 +126,13 @@ public class VideoManage extends BaseEntityForMysql {
 
     public void setServicePackageUuid(String servicePackageUuid) {
         this.servicePackageUuid = servicePackageUuid;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 }

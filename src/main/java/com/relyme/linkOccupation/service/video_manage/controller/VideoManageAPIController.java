@@ -193,12 +193,13 @@ public class VideoManageAPIController {
 
                     // 企业VIP用户
                     if(finalEnterpriseInfo != null && StringUtils.isNotEmpty(finalEnterpriseInfo.getServicePackageUuid())){
-                        predicates.add(criteriaBuilder.equal(root.get("servicePackageUuid"), finalEnterpriseInfo.getServicePackageUuid()));
+                        predicates.add(criteriaBuilder.like(root.get("servicePackageUuid"), "%"+finalEnterpriseInfo.getServicePackageUuid()+"%"));
                     }
                     //普通用户
                     else{
-                        predicates_or.add(criteriaBuilder.isNull(root.get("servicePackageUuid")));
-                        predicates_or.add(criteriaBuilder.isEmpty(root.get("servicePackageUuid")));
+//                        predicates_or.add(criteriaBuilder.isNull(root.get("servicePackageUuid")));
+//                        predicates_or.add(criteriaBuilder.isEmpty(root.get("servicePackageUuid")));
+                        predicates.add(criteriaBuilder.like(root.get("servicePackageUuid"), "%00000000%"));
                     }
 
                     condition_tData = criteriaBuilder.equal(root.get("active"), 1);
