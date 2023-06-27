@@ -8,6 +8,7 @@ import com.relyme.linkOccupation.service.legal_advice.domain.LegalAdvice;
 import com.relyme.linkOccupation.service.legal_advice.domain.LegalAdviceView;
 import com.relyme.linkOccupation.service.legal_advice.dto.LegalAdviceAPIQueryDto;
 import com.relyme.linkOccupation.service.legal_advice.dto.LegalAdviceDto;
+import com.relyme.linkOccupation.service.legal_advice.dto.LegalAdviceQueryUuidDto;
 import com.relyme.linkOccupation.service.legal_advice.dto.LegalAdviceSatisfiedUuidDto;
 import com.relyme.linkOccupation.utils.JSON;
 import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
@@ -180,6 +181,34 @@ public class LegalAdviceAPIController {
             Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
             Page<LegalAdviceView> legalAdviceViewPage = legalAdviceViewDao.findAll(specification,pageable);
             return new ResultCodeNew("0","",legalAdviceViewPage);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+    /**
+     * 查询明细
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("查询明细")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = LegalAdvice.class,notinclude = "sn,updateTime,active,page,pageSize,querySort,orderColumn,limit")
+    @RequestMapping(value="/findByUuid",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object findByUuid(@Validated @RequestBody LegalAdviceQueryUuidDto queryEntity, HttpServletRequest request) {
+        try{
+
+            if(StringUtils.isEmpty(queryEntity.getUuid())){
+                throw new Exception("投诉建议uuid不能为空！");
+            }
+
+            LegalAdvice legalAdvice = legalAdviceDao.findByUuid(queryEntity.getUuid());
+            if(legalAdvice == null){
+                throw new Exception("投诉建议信息异常！");
+            }
+
+            return new ResultCodeNew("0","",legalAdvice);
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());

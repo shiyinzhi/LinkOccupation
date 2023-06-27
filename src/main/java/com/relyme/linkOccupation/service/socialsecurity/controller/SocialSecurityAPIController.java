@@ -4,15 +4,16 @@ package com.relyme.linkOccupation.service.socialsecurity.controller;
 import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
 import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
+import com.relyme.linkOccupation.service.socialsecurity.dao.InsuredPersonChangeDao;
 import com.relyme.linkOccupation.service.socialsecurity.dao.SocialSecurityDao;
 import com.relyme.linkOccupation.service.socialsecurity.dao.SocialSecurityViewDao;
-import com.relyme.linkOccupation.service.socialsecurity.domain.SocialSecurity;
-import com.relyme.linkOccupation.service.socialsecurity.domain.SocialSecurityView;
+import com.relyme.linkOccupation.service.socialsecurity.domain.InsuredPersonChange;
 import com.relyme.linkOccupation.service.socialsecurity.dto.SocialSecurityQueryDto;
 import com.relyme.linkOccupation.service.socialsecurity.dto.SocialSecurityUuidDto;
 import com.relyme.linkOccupation.utils.JSON;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
 import com.relyme.linkOccupation.utils.bean.ResultCodeNew;
+import com.relyme.linkOccupation.utils.date.DateUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,6 +50,9 @@ public class SocialSecurityAPIController {
 
     @Autowired
     SocialSecurityDao socialSecurityDao;
+
+    @Autowired
+    InsuredPersonChangeDao insuredPersonChangeDao;
 
     @Autowired
     CustAccountDao custAccountDao;
@@ -65,30 +71,31 @@ public class SocialSecurityAPIController {
      */
     @ApiOperation("条件查询信息")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = SocialSecurityView.class)
+    @JSON(type = InsuredPersonChange.class)
     @RequestMapping(value="/findByConditionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByConditionAPI(@Validated @RequestBody SocialSecurityQueryDto queryEntity, HttpServletRequest request) {
         try{
 
             //查询默认当天的费用记录
-            Specification<SocialSecurityView> specification=new Specification<SocialSecurityView>() {
+            Specification<InsuredPersonChange> specification=new Specification<InsuredPersonChange>() {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public Predicate toPredicate(Root<SocialSecurityView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                public Predicate toPredicate(Root<InsuredPersonChange> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                     List<Predicate> predicates = new ArrayList<>();
                     List<Predicate> predicates_or = new ArrayList<>();
                     Predicate condition_tData = null;
-                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
-                        predicates.add(criteriaBuilder.like(root.get("enterpriseName"), "%"+queryEntity.getSearStr()+"%"));
-                    }
+//                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
+//                        predicates.add(criteriaBuilder.like(root.get("enterpriseName"), "%"+queryEntity.getSearStr()+"%"));
+//                    }
 
                     if(queryEntity.getSocialDate() != null){
-//                        String[] strings = queryEntity.getSocialDate().split("-");
-//                        String lastDayOfMonth = DateUtil.getLastDayOfMonth(Integer.parseInt(strings[0]),Integer.parseInt(strings[1]));
-//                        Date startDate = DateUtil.stringtoDate(queryEntity.getSocialDate() + "-01 00:00:00", DateUtil.FORMAT_ONE);
-//                        Date endDate = DateUtil.stringtoDate(lastDayOfMonth + " 23:59:59", DateUtil.FORMAT_ONE);
-                        predicates.add(criteriaBuilder.equal(root.get("socialMonth"), queryEntity.getSocialDate()));
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(queryEntity.getSocialDate());
+                        String lastDayOfMonth = DateUtil.getLastDayOfMonth(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH)+1);
+                        Date startDate = queryEntity.getSocialDate();
+                        Date endDate = DateUtil.stringtoDate(lastDayOfMonth + " 23:59:59", DateUtil.FORMAT_ONE);
+                        predicates.add(criteriaBuilder.between(root.get("addTime"), startDate,endDate));
                     }
 
                     if(StringUtils.isNotEmpty(queryEntity.getEnterpriseUuid())){
@@ -112,7 +119,7 @@ public class SocialSecurityAPIController {
             };
             Sort sort = new Sort(Sort.Direction.DESC, "addTime");
             Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
-            Page<SocialSecurityView> enterpriseInfoPage = socialSecurityViewDao.findAll(specification,pageable);
+            Page<InsuredPersonChange> enterpriseInfoPage = insuredPersonChangeDao.findAll(specification,pageable);
 
             return new ResultCodeNew("0","",enterpriseInfoPage);
         }catch(Exception ex){
@@ -122,6 +129,7 @@ public class SocialSecurityAPIController {
     }
 
 
+
     /**
      * 查询详情信息
      * @param queryEntity
@@ -129,12 +137,12 @@ public class SocialSecurityAPIController {
      */
     @ApiOperation("查询详情信息")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = SocialSecurity.class)
+    @JSON(type = InsuredPersonChange.class)
     @RequestMapping(value="/findByUuid",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByUuid(@Validated @RequestBody SocialSecurityUuidDto queryEntity, HttpServletRequest request) {
         try{
 
-            SocialSecurity byUuid = socialSecurityDao.findByUuid(queryEntity.getUuid());
+            InsuredPersonChange byUuid = insuredPersonChangeDao.findByUuid(queryEntity.getUuid());
             if(byUuid == null){
                 throw new Exception("代缴社保信息异常！");
             }

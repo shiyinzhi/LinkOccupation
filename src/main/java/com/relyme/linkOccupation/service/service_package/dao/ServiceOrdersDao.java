@@ -6,6 +6,8 @@ import com.relyme.linkOccupation.utils.dao.ExtJpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Date;
+
 public interface ServiceOrdersDao extends ExtJpaRepository<ServiceOrders, String>, JpaSpecificationExecutor<ServiceOrders> {
 
     /**
@@ -34,5 +36,15 @@ public interface ServiceOrdersDao extends ExtJpaRepository<ServiceOrders, String
             "\tservice_orders.is_buy_offline = 1 AND\n" +
             "\tservice_orders.enterprise_uuid = ?1",nativeQuery = true)
     int getExperiencePackCount(String enterpriseUuid);
+
+
+    /**
+     * 通过开始和结束时间查询企业订单信息
+     * @param startTime
+     * @param endTime
+     * @param enterpriseUuid
+     * @return
+     */
+    ServiceOrders findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuid(Date startTime,Date endTime,String enterpriseUuid);
 
 }

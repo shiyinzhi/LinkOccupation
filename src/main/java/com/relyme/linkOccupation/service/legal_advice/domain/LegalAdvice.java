@@ -72,7 +72,7 @@ public class LegalAdvice extends BaseEntityForMysql {
     private int expHourTwofour;
 
     /**
-     * 是否满意  0不满意 1满意
+     * 是否满意  0 待评价 1不满意 2满意
      */
     @Column(name = "handle_satisfied", length = 3,columnDefinition="tinyint default 0")
     private int handleSatisfied;

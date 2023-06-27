@@ -133,7 +133,7 @@ public class ServicePackageAPIController {
      */
     @ApiOperation("查询详情信息")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = ServicePackageOutDto.class,include = "packageName,coverFileName,isClose,serviceDetailList,servicePricesList")
+    @JSON(type = ServicePackageOutDto.class,include = "packageName,coverFileName,isClose,serviceDetailList,servicePricesList,coverFilePath")
     @JSON(type = ServiceDetail.class,notinclude = "sn,addTime,updateTime,active,page,pageSize,querySort,orderColumn,limit")
     @JSON(type = ServicePrices.class,notinclude = "sn,addTime,updateTime,active,page,pageSize,querySort,orderColumn,limit")
     @RequestMapping(value="/findByUuid",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)

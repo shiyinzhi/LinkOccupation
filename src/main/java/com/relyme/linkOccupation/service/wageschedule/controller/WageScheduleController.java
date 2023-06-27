@@ -270,7 +270,14 @@ public class WageScheduleController {
     @JSON(type = CustAccount.class)
     @RequestMapping(value="/inExcel",method = RequestMethod.POST,consumes = MediaType.ALL_VALUE)
     public Object excelIn(HttpServletRequest request){
+
         try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
             List<MultipartFile> files = ((MultipartHttpServletRequest) request).getFiles("file");
             String fileName = FileUtils.saveFile(files.get(0), "excelin");
             String filePath = SysConfig.getSaveFilePath()+ File.separator+"excelin"+File.separator+fileName;
@@ -560,6 +567,7 @@ public class WageScheduleController {
 
                 if(update == null){
                     WageSchedule wageSchedule = new WageSchedule();
+                    wageSchedule.setUserAccountUuid(userAccount.getUuid());
                     wageSchedule.setRosterName(rosterName);
                     wageSchedule.setRosterPhone(rosterPhone);
                     wageSchedule.setWageMonth(wageMonth);
@@ -592,6 +600,7 @@ public class WageScheduleController {
                     wageSchedule.setEnterpriseUuid(enterpriseInfo.getUuid());
                     wageScheduleList.add(wageSchedule);
                 }else{
+                    update.setUserAccountUuid(userAccount.getUuid());
                     update.setRosterName(rosterName);
                     update.setRosterPhone(rosterPhone);
                     update.setWageMonth(wageMonth);

@@ -18,9 +18,9 @@ public class LegalAdviceSatisfiedUuidDto {
     private String uuid;
 
     /**
-     * 是否满意  0不满意 1满意
+     * 是否满意  1不满意 2满意
      */
-    @ApiModelProperty("是否满意  0不满意 1满意")
+    @ApiModelProperty("是否满意  1不满意 2满意")
     private Integer handleSatisfied;
 
 

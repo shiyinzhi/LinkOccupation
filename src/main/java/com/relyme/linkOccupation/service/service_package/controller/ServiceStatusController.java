@@ -6,7 +6,9 @@ import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
 import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
+import com.relyme.linkOccupation.service.service_package.dao.ServiceOrdersDao;
 import com.relyme.linkOccupation.service.service_package.dao.ServiceStatusDao;
+import com.relyme.linkOccupation.service.service_package.domain.ServiceOrders;
 import com.relyme.linkOccupation.service.service_package.domain.ServiceStatus;
 import com.relyme.linkOccupation.service.service_package.dto.ServiceStatusDto;
 import com.relyme.linkOccupation.service.service_package.dto.ServiceStatusQueryDto;
@@ -16,6 +18,7 @@ import com.relyme.linkOccupation.utils.JSON;
 import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
 import com.relyme.linkOccupation.utils.bean.ResultCodeNew;
+import com.relyme.linkOccupation.utils.date.DateUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -35,8 +38,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author shiyinzhi
@@ -57,6 +59,9 @@ public class ServiceStatusController {
 
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
+
+    @Autowired
+    ServiceOrdersDao serviceOrdersDao;
 
     /**
      * 条件查询信息
@@ -116,7 +121,18 @@ public class ServiceStatusController {
             Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
             Page<ServiceStatus> serviceStatusPage = serviceStatusDao.findAll(specification,pageable);
 
-            return new ResultCodeNew("0","",serviceStatusPage);
+            //查询服务期限
+            Date d = new Date();
+            ServiceOrders serviceOrders = serviceOrdersDao.findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuid(d,d, queryEntity.getEnterpriseUuid());
+            if(serviceOrders == null){
+                throw new Exception("服务订单信息异常！");
+            }
+
+            Map map = new HashMap();
+            map.put("startTime", DateUtil.dateToString(serviceOrders.getStartTime(),DateUtil.FORMAT_TWO));
+            map.put("endTime",DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_TWO));
+
+            return new ResultCodeNew("0","",serviceStatusPage,map);
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());
