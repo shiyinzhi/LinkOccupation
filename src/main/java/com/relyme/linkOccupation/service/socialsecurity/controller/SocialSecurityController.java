@@ -7,10 +7,13 @@ import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
 import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
+import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfoView;
 import com.relyme.linkOccupation.service.socialsecurity.dao.InsuredPersonChangeDao;
+import com.relyme.linkOccupation.service.socialsecurity.dao.InsuredPersonChangeViewDao;
 import com.relyme.linkOccupation.service.socialsecurity.dao.SocialSecurityDao;
 import com.relyme.linkOccupation.service.socialsecurity.dao.SocialSecurityViewDao;
 import com.relyme.linkOccupation.service.socialsecurity.domain.InsuredPersonChange;
+import com.relyme.linkOccupation.service.socialsecurity.domain.InsuredPersonChangeView;
 import com.relyme.linkOccupation.service.socialsecurity.domain.SocialSecurity;
 import com.relyme.linkOccupation.service.socialsecurity.dto.SocialSecurityQueryDto;
 import com.relyme.linkOccupation.service.socialsecurity.dto.SocialSecurityUuidDto;
@@ -26,7 +29,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +52,13 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -80,6 +90,9 @@ public class SocialSecurityController {
 
     @Autowired
     InsuredPersonChangeDao insuredPersonChangeDao;
+
+    @Autowired
+    InsuredPersonChangeViewDao insuredPersonChangeViewDao;
 
 
     /**
@@ -535,94 +548,166 @@ public class SocialSecurityController {
 
     }
 
-//    /**
-//     * 导出社保列表信息 excel
-//     * @param queryEntity
-//     * @return
-//     */
-//    @ApiOperation("导出社保列表信息 excel")
-//    @JSON(type = EnterpriseInfoView.class  , include="content,totalElements")
-//    @JSON(type = EnterpriseInfoView.class)
-//    @RequestMapping(value="/exportSocialsecurityListExcel",method = RequestMethod.POST,consumes = MediaType.ALL_VALUE)
-//    public void exportEnterpriseInfosListExcel(@RequestBody SocialSecurityQueryDto queryEntity, HttpServletRequest request, HttpServletResponse response) {
-//        try{
-//
-//            UserAccount userAccount = LoginBean.getUserAccount(request);
-//            if(userAccount == null){
-//                throw new Exception("用户信息异常");
-//            }
-//
-//            // 第一步，创建一个workbook，对应一个Excel文件
-//            XSSFWorkbook workbook = new XSSFWorkbook();
-//
-//            // 第二步，在webbook中添加一个sheet,对应Excel文件中的sheet
-//            XSSFSheet hssfSheet = workbook.createSheet("工资表");
-//            hssfSheet.setColumnWidth(1, 3600);
-//            hssfSheet.setColumnWidth(2, 3600);
-//            hssfSheet.setColumnWidth(3, 3600);
-//            hssfSheet.setColumnWidth(4, 3600);
-//            hssfSheet.setColumnWidth(5, 3600);
-//            hssfSheet.setColumnWidth(6, 3600);
-//            hssfSheet.setColumnWidth(7, 3600);
-//            hssfSheet.setColumnWidth(8, 3600);
-//            hssfSheet.setColumnWidth(9, 3600);
-//            hssfSheet.setColumnWidth(10, 3600);
-//            hssfSheet.setColumnWidth(11, 3600);
-//            hssfSheet.setColumnWidth(12, 3600);
-//            hssfSheet.setColumnWidth(13, 3600);
-//            hssfSheet.setColumnWidth(14, 3600);
-//            hssfSheet.setColumnWidth(15, 3600);
-//            hssfSheet.setColumnWidth(16, 3600);
-//            hssfSheet.setColumnWidth(17, 3600);
-//            hssfSheet.setColumnWidth(18, 3600);
-//            hssfSheet.setColumnWidth(19, 3600);
-//            hssfSheet.setColumnWidth(20, 3600);
-//
-//            // 第三步，在sheet中添加表头第0行,注意老版本poi对Excel的行数列数有限制short
-//
-//            XSSFRow row = hssfSheet.createRow(0);
-//
-//            // 第四步，创建单元格，并设置值表头 设置表头居中
-//            CellStyle cellStyle = workbook.createCellStyle();
-//            // 水平布局：居中
-//            cellStyle.setAlignment(CellStyle.ALIGN_CENTER);
-//            cellStyle.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
-//            cellStyle.setWrapText(true);
-//
-//            //事件title
-//            Cell title = row.createCell(0);
-//            title.setCellValue("工资表");
-//            title.setCellStyle(cellStyle);
+    /**
+     * 导出社保列表信息 excel
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("导出社保列表信息 excel")
+    @JSON(type = EnterpriseInfoView.class  , include="content,totalElements")
+    @JSON(type = EnterpriseInfoView.class)
+    @RequestMapping(value="/exportSocialsecurityListExcel",method = RequestMethod.POST,consumes = MediaType.ALL_VALUE)
+    public void exportEnterpriseInfosListExcel(@RequestBody SocialSecurityQueryDto queryEntity, HttpServletRequest request, HttpServletResponse response) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("用户信息异常");
+            }
+
+            // 第一步，创建一个workbook，对应一个Excel文件
+            XSSFWorkbook workbook = new XSSFWorkbook();
+
+            // 第二步，在webbook中添加一个sheet,对应Excel文件中的sheet
+            XSSFSheet hssfSheet = workbook.createSheet("社保信息");
+            hssfSheet.setColumnWidth(1, 3600);
+            hssfSheet.setColumnWidth(2, 3600);
+            hssfSheet.setColumnWidth(3, 3600);
+            hssfSheet.setColumnWidth(4, 3600);
+            hssfSheet.setColumnWidth(5, 3600);
+            hssfSheet.setColumnWidth(6, 3600);
+            hssfSheet.setColumnWidth(7, 3600);
+            hssfSheet.setColumnWidth(8, 3600);
+            hssfSheet.setColumnWidth(9, 3600);
+            hssfSheet.setColumnWidth(10, 3600);
+            hssfSheet.setColumnWidth(11, 3600);
+            hssfSheet.setColumnWidth(12, 3600);
+            hssfSheet.setColumnWidth(13, 3600);
+            hssfSheet.setColumnWidth(14, 3600);
+            hssfSheet.setColumnWidth(15, 3600);
+            hssfSheet.setColumnWidth(16, 3600);
+            hssfSheet.setColumnWidth(17, 3600);
+            hssfSheet.setColumnWidth(18, 3600);
+            hssfSheet.setColumnWidth(19, 3600);
+            hssfSheet.setColumnWidth(20, 3600);
+
+            // 第三步，在sheet中添加表头第0行,注意老版本poi对Excel的行数列数有限制short
+
+            XSSFRow row = hssfSheet.createRow(0);
+
+            // 第四步，创建单元格，并设置值表头 设置表头居中
+            CellStyle cellStyle = workbook.createCellStyle();
+            // 水平布局：居中
+            cellStyle.setAlignment(CellStyle.ALIGN_CENTER);
+            cellStyle.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+            cellStyle.setWrapText(true);
+
+            //事件title
+            Cell title0 = row.createCell(0);
+            title0.setCellValue("单位编号:");
+            title0.setCellStyle(cellStyle);
 //            CellRangeAddress region = new CellRangeAddress(0, 0, 0, 20);
 //            hssfSheet.addMergedRegion(region);
-//
-//            //制表人
-//            row = hssfSheet.createRow(1);
-//            Cell zbr_title = row.createCell(0);
-//            zbr_title.setCellValue("制表人:");
-//            zbr_title.setCellStyle(cellStyle);
-//
-//            Cell zbr_name = row.createCell(1);
-//            zbr_name.setCellValue(userAccount.getName());
-//            zbr_name.setCellStyle(cellStyle);
-//
-//            Cell zbr_time_title = row.createCell(2);
-//            zbr_time_title.setCellValue("制表时间:");
-//            zbr_time_title.setCellStyle(cellStyle);
-//
-//            Cell zbr_time = row.createCell(3);
-//            zbr_time.setCellValue(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
-//            zbr_time.setCellStyle(cellStyle);
-////            CellRangeAddress region_1 = new CellRangeAddress(1, 1, 3, 5);
-////            hssfSheet.addMergedRegion(region_1);
-//
-//
-//
-//            //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
-//            XSSFDrawing patriarch = hssfSheet.createDrawingPatriarch();
-//
+            Cell title1 = row.createCell(1);
+            title1.setCellValue("20336579");
+            title1.setCellStyle(cellStyle);
+
+            Cell title3 = row.createCell(3);
+            title3.setCellValue("单位名称：重庆联畅人力资源管理有限公司");
+            title3.setCellStyle(cellStyle);
+
+            Cell title5 = row.createCell(5);
+            title5.setCellValue("重庆市参加社会保险人员基本情况表");
+            title5.setCellStyle(cellStyle);
+
+            //制表人
+            row = hssfSheet.createRow(1);
+            Cell zbr_title = row.createCell(0);
+            zbr_title.setCellValue("      填写说明     校验结果:");
+            zbr_title.setCellStyle(cellStyle);
+
+            Cell zbr_name = row.createCell(1);
+            zbr_name.setCellValue("服务公司名称");
+            zbr_name.setCellStyle(cellStyle);
+
+            Cell zbr_time_title = row.createCell(2);
+            zbr_time_title.setCellValue("证件号码");
+            zbr_time_title.setCellStyle(cellStyle);
+
+            Cell zbr_time = row.createCell(3);
+            zbr_time.setCellValue("姓名");
+            zbr_time.setCellStyle(cellStyle);
+//            CellRangeAddress region_1 = new CellRangeAddress(1, 1, 3, 5);
+//            hssfSheet.addMergedRegion(region_1);
+            Cell zbr_time1 = row.createCell(4);
+            zbr_time1.setCellValue("民族");
+            zbr_time1.setCellStyle(cellStyle);
+
+            Cell zbr_time2 = row.createCell(5);
+            zbr_time2.setCellValue("首次参加工作日期");
+            zbr_time2.setCellStyle(cellStyle);
+
+            Cell zbr_time3 = row.createCell(6);
+            zbr_time3.setCellValue("月基本工资额");
+            zbr_time3.setCellStyle(cellStyle);
+
+            Cell zbr_time4 = row.createCell(7);
+            zbr_time4.setCellValue("工种");
+            zbr_time4.setCellStyle(cellStyle);
+
+            Cell zbr_time5 = row.createCell(8);
+            zbr_time5.setCellValue("个人身份");
+            zbr_time5.setCellStyle(cellStyle);
+
+            Cell zbr_time6 = row.createCell(9);
+            zbr_time6.setCellValue("户口性质");
+            zbr_time6.setCellStyle(cellStyle);
+
+            Cell zbr_time7 = row.createCell(10);
+            zbr_time7.setCellValue("联系电话");
+            zbr_time7.setCellStyle(cellStyle);
+
+            Cell zbr_time8 = row.createCell(11);
+            zbr_time8.setCellValue("文化程度");
+            zbr_time8.setCellStyle(cellStyle);
+
+            Cell zbr_time9 = row.createCell(12);
+            zbr_time9.setCellValue("养老保险参保时间");
+            zbr_time9.setCellStyle(cellStyle);
+
+            Cell zbr_time10 = row.createCell(13);
+            zbr_time10.setCellValue("失业保险参保时间");
+            zbr_time10.setCellStyle(cellStyle);
+
+            Cell zbr_time11 = row.createCell(14);
+            zbr_time11.setCellValue("医疗保险参保时间");
+            zbr_time11.setCellStyle(cellStyle);
+
+            Cell zbr_time12 = row.createCell(15);
+            zbr_time12.setCellValue("工伤保险参保时间");
+            zbr_time12.setCellStyle(cellStyle);
+
+            Cell zbr_time13 = row.createCell(16);
+            zbr_time13.setCellValue("生育保险参保时间");
+            zbr_time13.setCellStyle(cellStyle);
+
+            Cell zbr_time14 = row.createCell(17);
+            zbr_time14.setCellValue("备注");
+            zbr_time14.setCellStyle(cellStyle);
+
+            Cell zbr_time15 = row.createCell(18);
+            zbr_time15.setCellValue("专职技能");
+            zbr_time15.setCellStyle(cellStyle);
+
+            Cell zbr_time16 = row.createCell(19);
+            zbr_time16.setCellValue("技能等级");
+            zbr_time16.setCellStyle(cellStyle);
+
+            //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+            XSSFDrawing patriarch = hssfSheet.createDrawingPatriarch();
+
 //            row = hssfSheet.createRow(2);
-//
+
 //            String[] titles = new String[]{"序号", "企业名称","联系电话", "营业执照","推荐人手机号"};
 //            Cell hssfCell = null;
 //            int celIndex = 0;
@@ -634,110 +719,148 @@ public class SocialSecurityController {
 //                //列居中显示
 //                hssfCell.setCellStyle(cellStyle);
 //            }
-//
-//            //查询默认当天的费用记录
-//            Specification<SocialSecurityView> specification=new Specification<SocialSecurityView>() {
-//                private static final long serialVersionUID = 1L;
-//
-//                @Override
-//                public Predicate toPredicate(Root<SocialSecurityView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-//                    List<Predicate> predicates = new ArrayList<>();
-//                    List<Predicate> predicates_or = new ArrayList<>();
-//                    Predicate condition_tData = null;
-//                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
-//                        predicates.add(criteriaBuilder.like(root.get("enterpriseName"), "%"+queryEntity.getSearStr()+"%"));
-//                    }
-//
-//                    if(queryEntity.getSocialDate() != null){
-////                        String[] strings = queryEntity.getSocialDate().split("-");
-////                        String lastDayOfMonth = DateUtil.getLastDayOfMonth(Integer.parseInt(strings[0]),Integer.parseInt(strings[1]));
-////                        Date startDate = DateUtil.stringtoDate(queryEntity.getSocialDate() + "-01 00:00:00", DateUtil.FORMAT_ONE);
-////                        Date endDate = DateUtil.stringtoDate(lastDayOfMonth + " 23:59:59", DateUtil.FORMAT_ONE);
-//                        predicates.add(criteriaBuilder.equal(root.get("socialMonth"), queryEntity.getSocialDate()));
-//                    }
-//
-//                    if(StringUtils.isNotEmpty(queryEntity.getEnterpriseUuid())){
-//                        predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
-//                    }
-//
-////                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
-////                    predicates.add(condition_tData);
-//
-//
-//                    if(predicates_or.size() > 0){
-//                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
-//                    }
-//
-//                    Predicate[] predicates1 = new Predicate[predicates.size()];
-//                    query.where(predicates.toArray(predicates1));
-//                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
-//                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
-//                    return null;
-//                }
-//            };
-//            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
-//            Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
-//            Page<SocialSecurityView> enterpriseInfoPage = socialSecurityViewDao.findAll(specification,pageable);
-//
-//            List<EnterpriseInfoView> enterpriseInfos = enterpriseInfoPage.getContent();
-//
-//            EnterpriseInfoView enterpriseInfo = null;
-//            CustAccount custAccount = null;
-//            FileOutputStream fileOut = null;
-//            BufferedImage bufferImg = null;
-//            for (int i = 0; i < enterpriseInfos.size(); i++) {
-//                enterpriseInfo = enterpriseInfos.get(i);
-//                row = hssfSheet.createRow(i + 3);
-//                Cell cell = row.createCell(0);
-//                cell.setCellValue(i + 1);
-//                cell.setCellStyle(cellStyle);
-//
-//                cell = row.createCell(1);
-//                cell.setCellValue(enterpriseInfo.getEnterpriseName());
-//                cell.setCellStyle(cellStyle);
-//
-//                cell = row.createCell(2);
-//                cell.setCellValue(enterpriseInfo.getContactPhone());
-//                cell.setCellStyle(cellStyle);
-//
-//                if(StringUtils.isNotEmpty(enterpriseInfo.getReferrerUuid())){
-//                    custAccount = custAccountDao.findByUuid(enterpriseInfo.getReferrerUuid());
-//                    cell = row.createCell(5);
-//                    cell.setCellValue(custAccount.getMobile());
-//                    cell.setCellStyle(cellStyle);
-//                }
-//
-//                try {
-//                    ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
-//                    bufferImg = ImageIO.read(new File(SysConfig.getSaveFilePath()+"upload"+File.separator+enterpriseInfo.getBusinessLicensePic()));
-//                    ImageIO.write(bufferImg, "jpg", byteArrayOut);
-////                * @param dx1 图片的左上角在开始单元格（col1,row1）中的横坐标
-////                * @param dy1 图片的左上角在开始单元格（col1,row1）中的纵坐标
-////                * @param dx2 图片的右下角在结束单元格（col2,row2）中的横坐标
-////                * @param dy2 图片的右下角在结束单元格（col2,row2）中的纵坐标
-////                * @param col1 开始单元格所处的列号, base 0, 图片左上角在开始单元格内
-////                * @param row1 开始单元格所处的行号, base 0, 图片左上角在开始单元格内
-////                * @param col2 结束单元格所处的列号, base 0, 图片右下角在结束单元格内
-////                * @param row2 结束单元格所处的行号, base 0, 图片右下角在结束单元格内
-//                    XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0,(short) 3, row.getRowNum(), (short) 4, row.getRowNum()+1);
-//                    anchor.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
-//                    patriarch.createPicture(anchor, workbook.addPicture(byteArrayOut.toByteArray(), XSSFWorkbook.PICTURE_TYPE_JPEG));
-//                }catch (Exception e){
-//                    e.printStackTrace();
-//                    continue;
-//                }
-//            }
-//
-//            ServletOutputStream out = response.getOutputStream();
-//            workbook.write(out);
-//            out.close();
-//
-////            return new ResultCodeNew("0","");
-//        }catch(Exception ex){
-//            ex.printStackTrace();
-////            return new ResultCode("00",ex.getMessage(),new ArrayList());
-//        }
-//    }
+
+            //查询默认当天的费用记录
+            Specification<InsuredPersonChangeView> specification=new Specification<InsuredPersonChangeView>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<InsuredPersonChangeView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
+                        predicates.add(criteriaBuilder.like(root.get("enterpriseName"), "%"+queryEntity.getSearStr()+"%"));
+                    }
+
+                    if(queryEntity.getSocialDate() != null){
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(queryEntity.getSocialDate());
+                        String lastDayOfMonth = DateUtil.getLastDayOfMonth(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH)+1);
+                        Date startDate = queryEntity.getSocialDate();
+                        Date endDate = DateUtil.stringtoDate(lastDayOfMonth + " 23:59:59", DateUtil.FORMAT_ONE);
+                        predicates.add(criteriaBuilder.between(root.get("addTime"), startDate,endDate));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getEnterpriseUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
+                    }
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
+            Page<InsuredPersonChangeView> enterpriseInfoPage = insuredPersonChangeViewDao.findAll(specification,pageable);
+
+            List<InsuredPersonChangeView> enterpriseInfos = enterpriseInfoPage.getContent();
+
+            InsuredPersonChangeView enterpriseInfo = null;
+            CustAccount custAccount = null;
+            FileOutputStream fileOut = null;
+            BufferedImage bufferImg = null;
+            for (int i = 0; i < enterpriseInfos.size(); i++) {
+                enterpriseInfo = enterpriseInfos.get(i);
+                row = hssfSheet.createRow(i + 2);
+                Cell cell = row.createCell(1);
+                cell.setCellValue(enterpriseInfo.getEnterpriseName());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(2);
+                cell.setCellValue(enterpriseInfo.getRosterIdcno());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(3);
+                cell.setCellValue(enterpriseInfo.getRosterName());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(4);
+                cell.setCellValue(enterpriseInfo.getRosterNationality());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(5);
+                cell.setCellValue(enterpriseInfo.getFirstJobTime());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(6);
+                cell.setCellValue(enterpriseInfo.getWageBase().doubleValue());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(7);
+                cell.setCellValue(enterpriseInfo.getRosterPostType());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(8);
+                cell.setCellValue(enterpriseInfo.getPersonalIdentity());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(9);
+                cell.setCellValue(enterpriseInfo.getHouseholdType());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(10);
+                cell.setCellValue(enterpriseInfo.getRosterPhone());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(11);
+                cell.setCellValue(enterpriseInfo.getDegreeEducation());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(12);
+                cell.setCellValue(DateUtil.dateToString(enterpriseInfo.getEndowmentInsuranceTime(),DateUtil.LONG_DATE_FORMAT));
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(13);
+                cell.setCellValue(DateUtil.dateToString(enterpriseInfo.getUnemploymentInsuranceTime(),DateUtil.LONG_DATE_FORMAT));
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(14);
+                cell.setCellValue(DateUtil.dateToString(enterpriseInfo.getMedicalInsuranceTime(),DateUtil.LONG_DATE_FORMAT));
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(15);
+                cell.setCellValue(DateUtil.dateToString(enterpriseInfo.getInjuryInsuranceTime(),DateUtil.LONG_DATE_FORMAT));
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(16);
+                cell.setCellValue(DateUtil.dateToString(enterpriseInfo.getMaternityInsuranceTime(),DateUtil.LONG_DATE_FORMAT));
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(17);
+                cell.setCellValue(enterpriseInfo.getRemark());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(18);
+                cell.setCellValue(enterpriseInfo.getProfessionalSkill());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(19);
+                cell.setCellValue(enterpriseInfo.getProfessionalSkillLevel());
+                cell.setCellStyle(cellStyle);
+            }
+
+            ServletOutputStream out = response.getOutputStream();
+            workbook.write(out);
+            out.close();
+
+//            return new ResultCodeNew("0","");
+        }catch(Exception ex){
+            ex.printStackTrace();
+//            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
 
 
 
