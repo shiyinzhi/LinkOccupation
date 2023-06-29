@@ -39,9 +39,11 @@ public class WechatTemplateMsg {
             if(byUuid != null && StringUtils.isNotEmpty(byUuid.getUnionId())){
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("unionId", byUuid.getUnionId());
+//                jsonObject.put("remark", "ws");
                 String json = jsonObject.toString();
 //                String kfUrl = "https://www.wdzxchn.com/wechatinfo/wechataccount/getByunionId";
                 String kfUrl = "https://www.beelinggong.com/wechatinfo/wechataccount/getByunionId";
+//                String kfUrl = "https://www.ctxthr.com/wechatinfo/wechataccount/getByunionId";
                 record_log.info("通过unionid 获取公众号openid:"+kfUrl+ json);
                 String post = NetUtils.sendPost(kfUrl, json, "POST");
 
