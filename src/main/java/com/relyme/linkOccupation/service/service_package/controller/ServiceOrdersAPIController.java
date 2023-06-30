@@ -271,7 +271,7 @@ public class ServiceOrdersAPIController {
      * @return
      * @throws Exception
      */
-    private ServiceOrders getCaculateServiceOrderPrice(ServiceOrdersBuyPriceDto queryEntity) throws Exception {
+    public ServiceOrders getCaculateServiceOrderPrice(ServiceOrdersBuyPriceDto queryEntity) throws Exception {
         if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
             throw new Exception("企业uuid不能为空！");
         }
@@ -347,7 +347,7 @@ public class ServiceOrdersAPIController {
      * @return
      * @throws Exception
      */
-    private ServiceOrders getCaculateServiceOrderPriceWithOutSpecUuid(ServiceOrdersBuyPriceDto queryEntity) throws Exception {
+    public ServiceOrders getCaculateServiceOrderPriceWithOutSpecUuid(ServiceOrdersBuyPriceDto queryEntity) throws Exception {
         if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
             throw new Exception("企业uuid不能为空！");
         }

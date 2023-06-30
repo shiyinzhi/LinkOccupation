@@ -76,6 +76,12 @@ public class ServiceOrders extends BaseEntityForMysql {
     private String servicePackageOrder;
 
     /**
+     * 更新前的服务套餐订单uuid
+     */
+    @Column(name = "service_order_uuid_before", length = 128)
+    private String serviceOrderUuidBefore;
+
+    /**
      * 购买金额
      */
     @Column(name = "buy_money",length = 18,scale = 2)
@@ -116,6 +122,12 @@ public class ServiceOrders extends BaseEntityForMysql {
      */
     @Transient
     private String enterpriseScale;
+
+    /**
+     * 差价
+     */
+    @Transient
+    private BigDecimal spread;
 
     public String getUserAccountUuid() {
         return userAccountUuid;
@@ -235,5 +247,21 @@ public class ServiceOrders extends BaseEntityForMysql {
 
     public void setPayTime(Date payTime) {
         this.payTime = payTime;
+    }
+
+    public String getServiceOrderUuidBefore() {
+        return serviceOrderUuidBefore;
+    }
+
+    public void setServiceOrderUuidBefore(String serviceOrderUuidBefore) {
+        this.serviceOrderUuidBefore = serviceOrderUuidBefore;
+    }
+
+    public BigDecimal getSpread() {
+        return spread;
+    }
+
+    public void setSpread(BigDecimal spread) {
+        this.spread = spread;
     }
 }

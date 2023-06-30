@@ -11,6 +11,9 @@ import com.relyme.linkOccupation.service.mission.dao.MissionDao;
 import com.relyme.linkOccupation.service.mission.dao.MissionEvaluateDao;
 import com.relyme.linkOccupation.service.mission.dao.MissionRecordDao;
 import com.relyme.linkOccupation.service.mission.domain.*;
+import com.relyme.linkOccupation.service.service_package.dao.ServiceStatusDao;
+import com.relyme.linkOccupation.service.service_package.domain.ServiceStatus;
+import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.date.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +28,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
@@ -50,6 +54,9 @@ public class TestTask {
 
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
+
+    @Autowired
+    ServiceStatusDao serviceStatusDao;
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -329,6 +336,105 @@ public class TestTask {
             th_day.start();
         }catch (Exception ex){
             ex.printStackTrace();
+        }
+    }
+
+    /**
+     * 每月1日上午02:15触发
+     */
+    @Scheduled(cron = "0 1 02 15 * ?")
+    public void updateServiceStatus(){
+        try{
+            Thread th_day = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>updateServiceStatus every month");
+                    updateServiceStatusEveryMonth();
+                }
+            });
+            th_day.setDaemon(true);
+            th_day.start();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 更新任务状态为开始
+     */
+    private void updateServiceStatusEveryMonth() {
+        //总条数
+        Date dd = new Date();
+        int statusTotalCount = serviceStatusDao.getTotalCount();
+
+        int pageSize = 1;
+        int size = 500;
+        if(statusTotalCount > size){
+            if(statusTotalCount % size == 0){
+                pageSize = statusTotalCount / size;
+            }else{
+                pageSize = statusTotalCount / size + 1;
+            }
+        }
+
+        for (int i = 0; i < pageSize; i++) {
+
+            Specification<ServiceStatus> specification=new Specification<ServiceStatus>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<ServiceStatus> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+//                    if(queryEntity.getCustName() != null && queryEntity.getCustName().trim().length() !=0){
+//                        predicates.add(criteriaBuilder.like(root.get("custName"), "%"+queryEntity.getCustName()+"%"));
+//                    }
+//                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("missionStartTime"), dd));
+//                    predicates.add(criteriaBuilder.lessThan(root.get("missionStatus"), MissionStatu.ZZFW.getCode()));
+
+                    condition_tData = criteriaBuilder.equal(root.get("hasFinished"), 0);
+                    predicates.add(condition_tData);
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(i, size, sort);
+            Page<ServiceStatus> missionPage = serviceStatusDao.findAll(specification,pageable);
+            List<ServiceStatus> missionList = missionPage.getContent();
+            List<ServiceStatus> missionUpdate = new ArrayList<>();
+            List<ServiceStatus> missionAdd = new ArrayList<>();
+            missionList.forEach(mission -> {
+                ServiceStatus serviceStatus = new ServiceStatus();
+                try {
+                    new BeanCopyUtil().copyProperties(serviceStatus,mission,true,new String[]{"sn"});
+                    missionAdd.add(serviceStatus);
+
+                    mission.setActive(0);
+                    missionUpdate.add(mission);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            serviceStatusDao.save(missionUpdate);
+
+            serviceStatusDao.save(missionAdd);
         }
     }
 

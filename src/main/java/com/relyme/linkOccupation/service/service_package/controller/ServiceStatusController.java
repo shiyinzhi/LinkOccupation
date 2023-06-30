@@ -102,8 +102,8 @@ public class ServiceStatusController {
                         predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
                     }
 
-//                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
-//                    predicates.add(condition_tData);
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
 
 
                     if(predicates_or.size() > 0){
@@ -162,6 +162,8 @@ public class ServiceStatusController {
                 throw new Exception("服务状态信息异常！");
             }
 
+            byUuid.setUserAccountUuid(userAccount.getUuid());
+            byUuid.setServiceCountUsed(byUuid.getServiceCountUsed()+(byUuid.getServiceCount()-queryEntity.getServiceCount()));
             byUuid.setServiceCount(queryEntity.getServiceCount());
             byUuid.setStatusProcess(queryEntity.getStatusProcess());
 
@@ -177,6 +179,7 @@ public class ServiceStatusController {
                 }
 
                 byUuid.setHasFinished(1);
+                byUuid.setActive(0);
                 serviceStatusDao.save(byUuid);
 
 
@@ -237,10 +240,13 @@ public class ServiceStatusController {
                         if((serviceStatusDto.getStatusProcess().compareTo(new BigDecimal(100)) == 0 && serviceStatusDto.getServiceCount()==0) ||
                                 (serviceStatusDto.getStatusProcess().compareTo(new BigDecimal(0))==0 && serviceStatusDto.getServiceCount()==0)){
                             hasFinished.add(serviceStatus);
+                            serviceStatus.setActive(0);
                             serviceStatus.setHasFinished(1);
                         }
 
                         //更新状态
+                        serviceStatus.setUserAccountUuid(userAccount.getUuid());
+                        serviceStatus.setServiceCountUsed(serviceStatus.getServiceCountUsed()+(serviceStatus.getServiceCount()-serviceStatusDto.getServiceCount()));
                         serviceStatus.setStatusProcess(serviceStatusDto.getStatusProcess());
                         serviceStatus.setServiceCount(serviceStatusDto.getServiceCount());
                         hasUpdates.add(serviceStatus);

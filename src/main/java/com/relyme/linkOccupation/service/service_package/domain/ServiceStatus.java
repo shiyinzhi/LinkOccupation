@@ -68,10 +68,16 @@ public class ServiceStatus extends BaseEntityForMysql {
     private BigDecimal statusProcess;
 
     /**
-     * 服务次数
+     * 剩余服务次数
      */
     @Column(name = "service_count", length = 3,columnDefinition="int default 0")
     private int serviceCount;
+
+    /**
+     * 已使用服务次数
+     */
+    @Column(name = "service_count_used", length = 3,columnDefinition="int default 0")
+    private int serviceCountUsed;
 
     /**
      * 是否已完成 0否 1是
@@ -150,5 +156,13 @@ public class ServiceStatus extends BaseEntityForMysql {
 
     public void setHasFinished(int hasFinished) {
         this.hasFinished = hasFinished;
+    }
+
+    public int getServiceCountUsed() {
+        return serviceCountUsed;
+    }
+
+    public void setServiceCountUsed(int serviceCountUsed) {
+        this.serviceCountUsed = serviceCountUsed;
     }
 }

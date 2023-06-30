@@ -85,8 +85,8 @@ public class ServiceStatusAPIController {
                         predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
                     }
 
-//                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
-//                    predicates.add(condition_tData);
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
 
 
                     if(predicates_or.size() > 0){

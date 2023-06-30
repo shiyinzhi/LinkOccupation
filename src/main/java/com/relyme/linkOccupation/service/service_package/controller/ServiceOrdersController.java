@@ -2,14 +2,16 @@ package com.relyme.linkOccupation.service.service_package.controller;
 
 
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
+import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.invoice.dao.InvoiceDao;
+import com.relyme.linkOccupation.service.invoice.domain.Invoice;
 import com.relyme.linkOccupation.service.service_package.dao.*;
 import com.relyme.linkOccupation.service.service_package.domain.*;
-import com.relyme.linkOccupation.service.service_package.dto.ServiceOrderUuidDto;
-import com.relyme.linkOccupation.service.service_package.dto.ServiceOrdersQueryDto;
+import com.relyme.linkOccupation.service.service_package.dto.*;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
+import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
 import com.relyme.linkOccupation.utils.bean.ResultCodeNew;
 import com.relyme.linkOccupation.utils.date.DateUtil;
@@ -33,10 +35,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author shiyinzhi
@@ -73,6 +72,9 @@ public class ServiceOrdersController {
 
     @Autowired
     ServiceStatusDao serviceStatusDao;
+
+    @Autowired
+    ServiceOrdersAPIController serviceOrdersAPIController;
 
 
     /**
@@ -230,5 +232,269 @@ public class ServiceOrdersController {
             return new ResultCode("00",ex.getMessage(),new ArrayList());
         }
     }
+
+
+    /**
+     * 升级企业套餐服务
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("升级企业套餐服务")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrders.class,include = "uuid,spread")
+    @RequestMapping(value="/updateServicePackage",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object updateServicePackage(@Validated @RequestBody ServiceOrdersUpdateDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getServiceOrdersUuid())){
+                throw new Exception("已购服务订单uuid不能为空！");
+            }
+
+            ServiceOrders hasBuyOrder = serviceOrdersDao.findByUuid(queryEntity.getServiceOrdersUuid());
+            if(hasBuyOrder == null){
+                throw new Exception("已购服务订单信息异常！");
+            }
+
+            if(hasBuyOrder.getIsBuyOffline() != 1){
+                throw new Exception("已购服务订单未完成支付！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getNewServicePackageUuid())){
+                throw new Exception("更新套餐uuid不能为空！");
+            }
+
+            ServicePackage newServicePackage = servicePackageDao.findByUuid(queryEntity.getNewServicePackageUuid());
+            if(newServicePackage == null){
+                throw new Exception("更新套餐信息异常！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getServicePackageUuid())){
+                throw new Exception("已购买套餐uuid不能为空！");
+            }
+
+            ServicePackage byUuid = servicePackageDao.findByUuid(queryEntity.getServicePackageUuid());
+            if(byUuid == null){
+                throw new Exception("已购买套餐信息异常！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
+                throw new Exception("企业uuid不能为空！");
+            }
+
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(queryEntity.getEnterpriseUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+
+            if(queryEntity.getServicePackageUuid().equals(queryEntity.getNewServicePackageUuid())){
+                throw new Exception("不支持同种套餐变更！");
+            }
+
+            //查询服务价格
+            Specification<ServicePrices> specification=new Specification<ServicePrices>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<ServicePrices> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+                    if(StringUtils.isNotEmpty(queryEntity.getServicePackageUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("servicePackageUuid"), queryEntity.getServicePackageUuid()));
+                    }
+
+                    //多少人以上
+                    if(queryEntity.getEmployeesUpperLimit()==0){
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("employeesLowerLimit"), queryEntity.getEmployeesLowerLimit()));
+                    }else{
+                        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("employeesLowerLimit"), queryEntity.getEmployeesLowerLimit()));
+                        predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("employeesUpperLimit"), queryEntity.getEmployeesUpperLimit()));
+                        predicates.add(criteriaBuilder.notEqual(root.get("employeesUpperLimit"), 0));
+                    }
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(0, 10, sort);
+            Page<ServicePrices> servicePricesPage = servicePricesDao.findAll(specification,pageable);
+            List<ServicePrices> content = servicePricesPage.getContent();
+            if(content == null || content.size() == 0){
+                throw new Exception("套餐价格信息异常！");
+            }
+
+            if(content.size() > 1){
+                throw new Exception("符合企业规模的套餐存在多个！");
+            }
+
+            ServicePrices servicePrices = content.get(0);
+
+            List<ServiceSpecialOffer> serviceSpecialOfferList = null;
+            //通过套餐uuid和服务类型去查找优惠信息
+
+            ServiceSpecialOffer serviceSpecialOffer = null;
+            if (queryEntity.getSpecialType() != null) {
+                if( queryEntity.getSpecialType() == 0){
+                    serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndActive(servicePrices.getServicePackageUuid(), 0,1);
+                }
+                //通过套餐uuid和优惠类型、购买年限查找信息
+                else if(queryEntity.getSpecialType() ==1){
+                    serviceSpecialOfferList = serviceSpecialOfferDao.findByServicePackageUuidAndSpecialTypeAndBuyYearsAndActive(servicePrices.getServicePackageUuid(),1,queryEntity.getBuyNum(),1);
+                }
+                if(serviceSpecialOfferList == null || serviceSpecialOfferList.size() == 0){
+                    throw new Exception("优惠信息异常！");
+                }
+
+                if(serviceSpecialOfferList.size() > 1){
+                    throw new Exception("选择优惠信息存在多个！");
+                }
+
+                serviceSpecialOffer = serviceSpecialOfferList.get(0);
+            }
+
+            ServiceOrders serviceOrders = new ServiceOrders();
+            if(serviceSpecialOffer != null){
+                serviceOrders.setServiceSpecialOfferUuid(serviceSpecialOffer.getUuid());
+            }
+            new BeanCopyUtil().copyProperties(serviceOrders,queryEntity,true,new String[]{"sn"});
+            String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 4);
+            String dateTime = DateUtil.dateToString(new Date(),DateUtil.FORMAT_FOUR);
+            serviceOrders.setServicePackageOrder(dateTime+uuid);
+
+            //计算价格
+            ServiceOrdersBuyPriceDto serviceOrdersBuyPriceDto = new ServiceOrdersBuyPriceDto();
+            new BeanCopyUtil().copyProperties(serviceOrdersBuyPriceDto,queryEntity,true,new String[]{"sn"});
+            serviceOrdersBuyPriceDto.setServicePricesUuid(servicePrices.getUuid());
+            if(serviceSpecialOffer != null){
+                serviceOrdersBuyPriceDto.setServiceSpecialOfferUuid(serviceSpecialOffer.getUuid());
+            }
+            ServiceOrders caculateServiceOrderPrice = serviceOrdersAPIController.getCaculateServiceOrderPriceWithOutSpecUuid(serviceOrdersBuyPriceDto);
+
+            //如果更新的套餐价格低于已购买的套餐价格进行提示
+            if(caculateServiceOrderPrice.getBuyMoney().compareTo(hasBuyOrder.getBuyMoney()) < 0){
+                throw new Exception("变更套餐价格小于已购套餐价格！");
+            }
+
+            BigDecimal spread = caculateServiceOrderPrice.getBuyMoney().subtract(hasBuyOrder.getBuyMoney());
+
+            serviceOrders.setSpread(spread);
+
+            //购买价格为补差价
+            serviceOrders.setBuyMoney(spread);
+
+            //更新服务时间
+            //按年购买
+            //按月购买
+            if(serviceOrders.getBuyType()==1){
+                int totalMonths = serviceOrders.getBuyNum();
+                if(serviceSpecialOffer != null){
+                    totalMonths+= serviceSpecialOffer.getFreeMonthes();
+                }
+                Calendar calendar = Calendar.getInstance();
+                serviceOrders.setStartTime(hasBuyOrder.getStartTime());
+                calendar.add(Calendar.MONTH,totalMonths);
+                serviceOrders.setEndTime(calendar.getTime());
+            }else if(queryEntity.getBuyType() == 2 && serviceSpecialOffer != null){
+                Calendar calendar = Calendar.getInstance();
+                serviceOrders.setStartTime(hasBuyOrder.getStartTime());
+                calendar.add(Calendar.YEAR,serviceOrders.getBuyNum());
+                calendar.add(Calendar.MONTH,serviceSpecialOffer.getFreeMonthes());
+                serviceOrders.setEndTime(calendar.getTime());
+            }
+            serviceOrders.setServiceOrderUuidBefore(hasBuyOrder.getUuid());
+            serviceOrders.setUserAccountUuid(userAccount.getUuid());
+            serviceOrders.setEnterpriseUuid(enterpriseInfo.getUuid());
+            serviceOrders.setServicePackageUuid(newServicePackage.getUuid());
+            serviceOrders.setServicePricesUuid(servicePrices.getUuid());
+            if(serviceSpecialOffer != null){
+                serviceOrders.setServiceSpecialOfferUuid(serviceSpecialOffer.getUuid());
+            }
+            serviceOrdersDao.save(serviceOrders);
+
+            //生成发票信息
+            if(hasBuyOrder.getIsInvoice() == 1){
+                Invoice invoice = new Invoice();
+                invoice.setEnterpriseUuid(serviceOrders.getEnterpriseUuid());
+                invoice.setServicePackageOrder(serviceOrders.getServicePackageOrder());
+                invoiceDao.save(invoice);
+            }
+
+            //更新企业订单uuid、套餐uuid
+            enterpriseInfo.setServiceOrdersUuid(serviceOrders.getUuid());
+            enterpriseInfo.setServicePackageUuid(newServicePackage.getUuid());
+            enterpriseInfoDao.save(enterpriseInfo);
+
+            //更新服务进度信息
+            //获取现有的服务状态信息
+            List<ServiceStatus> hasBuyServiceStatuses = serviceStatusDao.findByEnterpriseUuidAndServiceTimeAndActive(queryEntity.getEnterpriseUuid(), DateUtil.stringtoDate(DateUtil.dateToString(new Date(), DateUtil.MONTG_DATE_FORMAT), DateUtil.MONTG_DATE_FORMAT),1);
+
+            //生成服务明细 更新后的服务明细
+            List<ServiceDetail> serviceDetailList = serviceDetailDao.findByServicePackageUuid(newServicePackage.getUuid());
+            List<ServiceStatus> serviceStatusList = new ArrayList<>();
+            for (ServiceDetail serviceDetail : serviceDetailList) {
+                ServiceStatus serviceStatus = new ServiceStatus();
+                serviceStatus.setEnterpriseUuid(serviceOrders.getEnterpriseUuid());
+                serviceStatus.setServicePackageUuid(serviceOrders.getServicePackageUuid());
+                serviceStatus.setServiceContent(serviceDetail.getServiceContent());
+                serviceStatus.setServiceDetailUuid(serviceDetail.getUuid());
+                serviceStatus.setServiceTime(DateUtil.stringtoDate(DateUtil.dateToString(new Date(),DateUtil.MONTG_DATE_FORMAT),DateUtil.MONTG_DATE_FORMAT));
+                serviceStatus.setStatusProcess(new BigDecimal(0));
+                serviceStatus.setServiceCount(serviceDetail.getServiceCount());
+                serviceStatusList.add(serviceStatus);
+            }
+
+            for (ServiceStatus serviceStatus : serviceStatusList) {
+                for (ServiceStatus hasBuyServiceStatus : hasBuyServiceStatuses) {
+                    //如果服务内容一样更新进度或服务次数数据
+                    if(serviceStatus.getServiceContent().equals(hasBuyServiceStatus.getServiceContent())){
+                        //更新服务进度
+                        if(hasBuyServiceStatus.getStatusProcess().compareTo(new BigDecimal(0)) > 0
+                                && hasBuyServiceStatus.getServiceCount()==0){
+                            serviceStatus.setStatusProcess(hasBuyServiceStatus.getStatusProcess());
+                        }
+                        //更新服务次数
+                        else if(hasBuyServiceStatus.getStatusProcess().compareTo(new BigDecimal(0)) == 0
+                                && hasBuyServiceStatus.getServiceCount() >0){
+                            serviceStatus.setServiceCount(serviceStatus.getServiceCount()-hasBuyServiceStatus.getServiceCountUsed());
+                            serviceStatus.setServiceCountUsed(hasBuyServiceStatus.getServiceCountUsed());
+                        }
+                    }
+                }
+            }
+
+            for (ServiceStatus hasBuyServiceStatus : hasBuyServiceStatuses) {
+                hasBuyServiceStatus.setActive(0);
+            }
+
+            //更新已购买服务
+            serviceStatusDao.save(hasBuyServiceStatuses);
+
+            //更新变更服务
+            serviceStatusDao.save(serviceStatusList);
+
+            return new ResultCodeNew("0","",serviceOrders);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
 
 }
