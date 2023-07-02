@@ -273,7 +273,7 @@
             <!-- 测试环境 -->
             <id>test</id>
             <properties>
-                <final.name>linkOccupation</final.name>
+                <final.name>linkOccupationTest</final.name>
                 <final.version>1.0.0</final.version>
                 <profiles.active>test</profiles.active>
             </properties>
