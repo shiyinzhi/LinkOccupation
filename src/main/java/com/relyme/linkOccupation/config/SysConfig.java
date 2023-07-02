@@ -15,6 +15,7 @@ public class SysConfig {
      * 文件默认的下载路径
      */
     public static final String DOWNLOAD_PATH_BASE="https://www.beelinggong.com"+File.separator;
+//    public static final String DOWNLOAD_PATH_BASE="https://www.ctxthr.com"+File.separator;
 //    public static final String DOWNLOAD_PATH_BASE="http://localhost:9631"+File.separator;
 
     public static final String DOWNLOAD_PATH_REPOSITORY = DOWNLOAD_PATH_BASE+SAVE_FILE_PATH;
