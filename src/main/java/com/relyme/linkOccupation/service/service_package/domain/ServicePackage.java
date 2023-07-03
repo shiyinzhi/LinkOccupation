@@ -34,7 +34,7 @@ public class ServicePackage extends BaseEntityForMysql {
     /**
      * 封面图片名称
      */
-    @Column(name = "cover_file_name",length = 128,nullable = false)
+    @Column(name = "cover_file_name",length = 128)
     private String coverFileName;
 
     /**

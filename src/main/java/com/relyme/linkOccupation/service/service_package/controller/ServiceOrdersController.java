@@ -1,6 +1,8 @@
 package com.relyme.linkOccupation.service.service_package.controller;
 
 
+import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
+import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.invoice.dao.InvoiceDao;
@@ -75,6 +77,9 @@ public class ServiceOrdersController {
 
     @Autowired
     ServiceOrdersAPIController serviceOrdersAPIController;
+
+    @Autowired
+    CustAccountDao custAccountDao;
 
 
     /**
@@ -490,6 +495,59 @@ public class ServiceOrdersController {
             serviceStatusDao.save(serviceStatusList);
 
             return new ResultCodeNew("0","",serviceOrders);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 校验代购买企业是否注册企业雇主账户
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("校验代购买企业是否注册企业雇主账户")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrders.class,include = "uuid")
+    @RequestMapping(value="/checkBuyerAccountStatus",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object checkBuyerAccountStatus(@Validated @RequestBody BuyerAccountStatusDto queryEntity, HttpServletRequest request) {
+        try{
+            if(StringUtils.isEmpty(queryEntity.getMobile())){
+                throw new Exception("购买者手机号不能为空！");
+            }
+
+            //检测是否注册账户
+            CustAccount byMobile = custAccountDao.findByMobile(queryEntity.getMobile());
+            if(byMobile == null){
+                throw new Exception("购买者需要使用该手机号在小程序注册企业雇主账号！");
+            }
+
+            //检测是否注册企业雇主账号
+            List<EnterpriseInfo> byCustAccountUuid = enterpriseInfoDao.findByCustAccountUuid(byMobile.getUuid());
+            if(byCustAccountUuid == null || byCustAccountUuid.size() == 0){
+                throw new Exception("购买者需要使用该手机号在小程序注册企业雇主账号！");
+            }
+
+            return new ResultCodeNew("0","校验通过！");
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+    /**
+     * 代企业购买套餐服务
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("代企业购买套餐服务")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrders.class,include = "uuid")
+    @RequestMapping(value="/buyServicePackageAdmin",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object buyServicePackageAdmin(@Validated @RequestBody ServiceOrdersDto queryEntity, HttpServletRequest request) {
+        try{
+            return serviceOrdersAPIController.buyServicePackage(queryEntity, request);
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());

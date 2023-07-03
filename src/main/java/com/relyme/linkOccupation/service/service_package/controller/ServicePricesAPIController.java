@@ -27,7 +27,9 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author shiyinzhi
@@ -87,7 +89,12 @@ public class ServicePricesAPIController {
             Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
             Page<ServicePrices> servicePricesPage = servicePricesDao.findAll(specification,pageable);
             List<ServicePrices> content = servicePricesPage.getContent();
+            List<ServicePrices> contentDx = new ArrayList<>();
+            Set<String> spindex = new HashSet<>();
             for (ServicePrices servicePrices : content) {
+                if(spindex.contains(servicePrices.getEmployeesLowerLimit()+"-"+servicePrices.getEmployeesUpperLimit())){
+                    continue;
+                }
                 if(servicePrices.getEmployeesLowerLimit()==0){
                     servicePrices.setPostNum(servicePrices.getEmployeesUpperLimit()+"人以下");
                 }else if(servicePrices.getEmployeesUpperLimit()==0){
@@ -95,9 +102,11 @@ public class ServicePricesAPIController {
                 }else{
                     servicePrices.setPostNum(servicePrices.getEmployeesLowerLimit()+"-"+servicePrices.getEmployeesUpperLimit()+"人");
                 }
+                contentDx.add(servicePrices);
+                spindex.add(servicePrices.getEmployeesLowerLimit()+"-"+servicePrices.getEmployeesUpperLimit());
             }
 
-            return new ResultCodeNew("0","",servicePricesPage);
+            return new ResultCodeNew("0","",contentDx,contentDx.size());
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());
