@@ -18,6 +18,12 @@ public class ServicePricesEmpeeQueryDto{
     @ApiModelProperty("每页显示条数")
     private int pageSize = 10;
 
+    /**
+     * 服务套餐uuid
+     */
+    @ApiModelProperty("服务套餐uuid")
+    private String servicePackageUuid;
+
     public int getPage() {
         return page;
     }
@@ -32,5 +38,13 @@ public class ServicePricesEmpeeQueryDto{
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public String getServicePackageUuid() {
+        return servicePackageUuid;
+    }
+
+    public void setServicePackageUuid(String servicePackageUuid) {
+        this.servicePackageUuid = servicePackageUuid;
     }
 }

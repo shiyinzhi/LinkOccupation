@@ -11,6 +11,7 @@ import com.relyme.linkOccupation.utils.bean.ResultCode;
 import com.relyme.linkOccupation.utils.bean.ResultCodeNew;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -55,7 +56,7 @@ public class ServicePricesAPIController {
      */
     @ApiOperation("获取企业规模列表")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = ServicePrices.class,include = "employeesLowerLimit,employeesUpperLimit,postNum")
+    @JSON(type = ServicePrices.class,include = "uuid,employeesLowerLimit,employeesUpperLimit,postNum")
     @RequestMapping(value="/findEmployeesListAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findEmployeesListAPI(@Validated @RequestBody ServicePricesEmpeeQueryDto queryEntity, HttpServletRequest request) {
         try{
@@ -69,6 +70,10 @@ public class ServicePricesAPIController {
                     List<Predicate> predicates = new ArrayList<>();
                     List<Predicate> predicates_or = new ArrayList<>();
                     Predicate condition_tData = null;
+
+                    if(StringUtils.isNotEmpty(queryEntity.getServicePackageUuid())){
+                        predicates.add( criteriaBuilder.equal(root.get("servicePackageUuid"), queryEntity.getServicePackageUuid()));
+                    }
 
                     condition_tData = criteriaBuilder.equal(root.get("active"), 1);
                     predicates.add(condition_tData);
