@@ -3,6 +3,9 @@ package com.relyme.linkOccupation.service.task;
 
 import com.relyme.linkOccupation.service.Individual_employers.dao.IndividualEmployersDao;
 import com.relyme.linkOccupation.service.Individual_employers.domain.IndividualEmployers;
+import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
+import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
+import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.employee.dao.EmployeeDao;
 import com.relyme.linkOccupation.service.employee.domain.Employee;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
@@ -11,7 +14,9 @@ import com.relyme.linkOccupation.service.mission.dao.MissionDao;
 import com.relyme.linkOccupation.service.mission.dao.MissionEvaluateDao;
 import com.relyme.linkOccupation.service.mission.dao.MissionRecordDao;
 import com.relyme.linkOccupation.service.mission.domain.*;
+import com.relyme.linkOccupation.service.service_package.dao.ServiceOrdersDao;
 import com.relyme.linkOccupation.service.service_package.dao.ServiceStatusDao;
+import com.relyme.linkOccupation.service.service_package.domain.ServiceOrders;
 import com.relyme.linkOccupation.service.service_package.domain.ServiceStatus;
 import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.date.DateUtil;
@@ -57,6 +62,15 @@ public class TestTask {
 
     @Autowired
     ServiceStatusDao serviceStatusDao;
+
+    @Autowired
+    ServiceOrdersDao serviceOrdersDao;
+
+    @Autowired
+    WechatTemplateMsg wechatTemplateMsg;
+
+    @Autowired
+    CustAccountDao custAccountDao;
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -519,6 +533,210 @@ public class TestTask {
                     missionEvaluateDao.save(missionEvaluateList);
                 }
             }
+
+        }
+    }
+
+
+    /**
+     * 每天早上5点检测服务是否到期 提前三天进行消息通知
+     */
+    @Scheduled(cron = "0 0 05 * * ?")
+    public void updateServiceTimeStatus(){
+        try{
+            Thread th_day = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>update updateServiceTimeStatus");
+
+                    updateServiceTimeStatusX();
+
+                }
+            });
+            th_day.setDaemon(true);
+            th_day.start();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * 更新服务是否到期
+     */
+    private void updateServiceTimeStatusX() {
+        //总条数
+        Date startTime = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startTime);
+        calendar.set(Calendar.DAY_OF_MONTH,3);
+        Date endTime = calendar.getTime();
+        int statusTotalCount = serviceOrdersDao.getServiceOrderCountByTimeRange(DateUtil.dateToString(startTime,DateUtil.FORMAT_ONE),DateUtil.dateToString(endTime,DateUtil.FORMAT_ONE));
+
+        int pageSize = 1;
+        int size = 500;
+        if(statusTotalCount > size){
+            if(statusTotalCount % size == 0){
+                pageSize = statusTotalCount / size;
+            }else{
+                pageSize = statusTotalCount / size + 1;
+            }
+        }
+
+        for (int i = 0; i < pageSize; i++) {
+
+            Specification<ServiceOrders> specification=new Specification<ServiceOrders>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<ServiceOrders> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+//                    if(queryEntity.getCustName() != null && queryEntity.getCustName().trim().length() !=0){
+//                        predicates.add(criteriaBuilder.like(root.get("custName"), "%"+queryEntity.getCustName()+"%"));
+//                    }
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("endTime"), startTime));
+                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("endTime"), endTime));
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(i, size, sort);
+            Page<ServiceOrders> missionPage = serviceOrdersDao.findAll(specification,pageable);
+            List<ServiceOrders> missionList = missionPage.getContent();
+            missionList.forEach(serviceOrders -> {
+                //消息提醒服务即将到期
+                EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
+                if(enterpriseInfo != null){
+                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+                    if(byMobile != null){
+                        //发送模板消息
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的服务即将到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务即将到期");
+                    }
+                }
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        }
+    }
+
+
+    /**
+     * 每天早上3点检测服务是否到期
+     */
+    @Scheduled(cron = "0 0 03 * * ?")
+    public void updateServiceTimeStatusExc(){
+        try{
+            Thread th_day = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>update updateServiceTimeStatusExc");
+
+                    updateServiceTimeStatusExcX();
+
+                }
+            });
+            th_day.setDaemon(true);
+            th_day.start();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * 更新服务是否到期
+     */
+    private void updateServiceTimeStatusExcX() {
+        //总条数
+        Date endTime = new Date();
+        int statusTotalCount = serviceOrdersDao.getServiceOrderExpire(DateUtil.dateToString(endTime,DateUtil.FORMAT_ONE));
+
+        int pageSize = 1;
+        int size = 500;
+        if(statusTotalCount > size){
+            if(statusTotalCount % size == 0){
+                pageSize = statusTotalCount / size;
+            }else{
+                pageSize = statusTotalCount / size + 1;
+            }
+        }
+
+        for (int i = 0; i < pageSize; i++) {
+
+            Specification<ServiceOrders> specification=new Specification<ServiceOrders>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<ServiceOrders> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+//                    if(queryEntity.getCustName() != null && queryEntity.getCustName().trim().length() !=0){
+//                        predicates.add(criteriaBuilder.like(root.get("custName"), "%"+queryEntity.getCustName()+"%"));
+//                    }
+                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("endTime"), endTime));
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+                    condition_tData = criteriaBuilder.equal(root.get("isExpire"), 0);
+                    predicates.add(condition_tData);
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(i, size, sort);
+            Page<ServiceOrders> missionPage = serviceOrdersDao.findAll(specification,pageable);
+            List<ServiceOrders> missionList = missionPage.getContent();
+            List<ServiceOrders> updateList = new ArrayList<>();
+            missionList.forEach(serviceOrders -> {
+                //消息提醒服务即将到期
+                EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
+                if(enterpriseInfo != null){
+                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+                    if(byMobile != null){
+                        //发送模板消息
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的服务已到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务已到期");
+                    }
+                }
+
+                serviceOrders.setActive(0);
+                serviceOrders.setIsExpire(1);
+                updateList.add(serviceOrders);
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            serviceOrdersDao.save(updateList);
 
         }
     }

@@ -47,4 +47,20 @@ public interface ServiceOrdersDao extends ExtJpaRepository<ServiceOrders, String
      */
     ServiceOrders findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuid(Date startTime,Date endTime,String enterpriseUuid);
 
+
+    /**
+     * 更具时间段查询服务订单数量
+     * @return
+     */
+    @Query(value = "select count(*) from service_orders where end_time >=?1 and end_time <=?2",nativeQuery = true)
+    int getServiceOrderCountByTimeRange(String startTime,String endTime);
+
+
+    /**
+     * 获取到期的服务订单数量
+     * @return
+     */
+    @Query(value = "select count(*) from service_orders where  end_time <=?1 and active = 1 and  is_expire = 0",nativeQuery = true)
+    int getServiceOrderExpire(String endTime);
+
 }

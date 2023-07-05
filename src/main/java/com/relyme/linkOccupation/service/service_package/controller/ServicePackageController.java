@@ -59,6 +59,9 @@ public class ServicePackageController {
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     /**
      * 添加或修改
@@ -151,7 +154,7 @@ public class ServicePackageController {
             List<ServicePackageView> servicePackageViewList = servicePackageViewPage.getContent();
             for (ServicePackageView servicePackageView : servicePackageViewList) {
                 if(StringUtils.isNotEmpty(servicePackageView.getCoverFileName())){
-                    servicePackageView.setCoverFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"repository"+ File.separator+servicePackageView.getCoverFileName());
+                    servicePackageView.setCoverFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"repository"+ File.separator+servicePackageView.getCoverFileName());
                 }
             }
 
@@ -254,7 +257,7 @@ public class ServicePackageController {
             }
 
             if(StringUtils.isNotEmpty(byUuid.getCoverFileName())){
-                byUuid.setCoverFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"repository"+ File.separator+byUuid.getCoverFileName());
+                byUuid.setCoverFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"repository"+ File.separator+byUuid.getCoverFileName());
             }
 
             return new ResultCodeNew("0","",byUuid);

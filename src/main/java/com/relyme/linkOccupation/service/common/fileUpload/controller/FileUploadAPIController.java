@@ -77,6 +77,9 @@ public class FileUploadAPIController {
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
     /**
      * 文件上传
      * @param request
@@ -93,7 +96,7 @@ public class FileUploadAPIController {
 //            String filePath = SysConfig.getSaveFilePath()+ File.separator+"upload"+File.separator+fileName;
             FileDomain fileDomain  = new FileDomain();
             fileDomain.setFileName(fileName);
-            fileDomain.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+File.separator+fileName);
+            fileDomain.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+File.separator+fileName);
             return new ResultCodeNew("0","",fileDomain);
         }catch (Exception ex){
             ex.printStackTrace();

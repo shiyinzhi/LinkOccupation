@@ -69,6 +69,10 @@ public class InvoiceController {
     @Autowired
     WechatTemplateMsg wechatTemplateMsg;
 
+    @Autowired
+    SysConfig sysConfig;
+
+
     /**
      * 条件查询信息
      * @param queryEntity
@@ -122,7 +126,7 @@ public class InvoiceController {
             List<InvoiceView> invoiceViewList = invoiceViewPage.getContent();
             for (InvoiceView invoiceView : invoiceViewList) {
                 if(StringUtils.isNotEmpty(invoiceView.getInvoiceFileName())){
-                    invoiceView.setInvoiceFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"repository"+ File.separator+invoiceView.getInvoiceFileName());
+                    invoiceView.setInvoiceFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"repository"+ File.separator+invoiceView.getInvoiceFileName());
                 }
             }
 

@@ -68,6 +68,9 @@ public class ServicePackageAPIController {
     @Autowired
     ServicePricesDao servicePricesDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
     /**
      * 条件查询信息
      * @param queryEntity
@@ -114,7 +117,7 @@ public class ServicePackageAPIController {
             List<ServicePackageView> servicePackageViewList = servicePackageViewPage.getContent();
             for (ServicePackageView servicePackageView : servicePackageViewList) {
                 if(StringUtils.isNotEmpty(servicePackageView.getCoverFileName())){
-                    servicePackageView.setCoverFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"repository"+ File.separator+servicePackageView.getCoverFileName());
+                    servicePackageView.setCoverFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"repository"+ File.separator+servicePackageView.getCoverFileName());
                 }
             }
 
@@ -146,7 +149,7 @@ public class ServicePackageAPIController {
             }
 
             if(StringUtils.isNotEmpty(byUuid.getCoverFileName())){
-                byUuid.setCoverFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"repository"+ File.separator+byUuid.getCoverFileName());
+                byUuid.setCoverFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"repository"+ File.separator+byUuid.getCoverFileName());
             }
 
             List<ServiceDetail> serviceDetailList = serviceDetailDao.findByServicePackageUuid(byUuid.getUuid());

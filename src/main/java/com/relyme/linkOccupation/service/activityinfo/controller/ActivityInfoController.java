@@ -53,6 +53,9 @@ public class ActivityInfoController {
     @Autowired
     ActivitySignupInfoDao activitySignupInfoDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     @ApiOperation("新增/修改活动信息")
     @JSON(type = ActivityInfo.class  , include="uuid")
@@ -162,7 +165,7 @@ public class ActivityInfoController {
             List<ActivityInfo> activityInfoList = activityInfoPage.getContent();
             for (ActivityInfo activityInfo : activityInfoList) {
                 if(StringUtils.isNotEmpty(activityInfo.getFileName())){
-                    activityInfo.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+activityInfo.getFileName());
+                    activityInfo.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+activityInfo.getFileName());
                 }
             }
 
@@ -245,7 +248,7 @@ public class ActivityInfoController {
             for (ActivitySignupInfo activitySignupInfo : activitySignupInfoList) {
                 activityInfo = activityInfoDao.findByUuid(activitySignupInfo.getActivityUuid());
                 if(StringUtils.isNotEmpty(activityInfo.getFileName())){
-                    activityInfo.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+activityInfo.getFileName());
+                    activityInfo.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+activityInfo.getFileName());
                 }
                 activitySignupInfo.setActivityInfo(activityInfo);
             }

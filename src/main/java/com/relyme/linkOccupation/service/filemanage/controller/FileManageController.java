@@ -57,6 +57,10 @@ public class FileManageController {
     @Autowired
     RosterDao rosterDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
+
     /**
      * 企业文件信息列表
      * @param request
@@ -120,10 +124,10 @@ public class FileManageController {
             List<FileManage> fileManageList = fileManagePage.getContent();
             for (FileManage fileManage : fileManageList) {
                 if(StringUtils.isNotEmpty(fileManage.getFileName())){
-                    fileManage.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+fileManage.getFileName());
+                    fileManage.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+fileManage.getFileName());
                 }
                 if(StringUtils.isNotEmpty(fileManage.getIconName())){
-                    fileManage.setIconPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+fileManage.getIconName());
+                    fileManage.setIconPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+fileManage.getIconName());
                 }
             }
 

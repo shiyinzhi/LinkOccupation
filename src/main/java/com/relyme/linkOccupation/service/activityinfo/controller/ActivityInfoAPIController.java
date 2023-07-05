@@ -54,6 +54,9 @@ public class ActivityInfoAPIController {
     @Autowired
     ActivitySignupInfoDao activitySignupInfoDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     /**
      * 分页查询我的活动信息
@@ -115,7 +118,7 @@ public class ActivityInfoAPIController {
 //                activityInfo = activityInfoDao.findByUuid(activitySignupInfo.getActivityUuid());
                 activityInfo = activitySignupInfo.getActivityInfo();
                 if(StringUtils.isNotEmpty(activityInfo.getFileName())){
-                    activityInfo.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+activityInfo.getFileName());
+                    activityInfo.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+activityInfo.getFileName());
                 }
                 activitySignupInfo.setActivityInfo(activityInfo);
             }
@@ -176,7 +179,7 @@ public class ActivityInfoAPIController {
             List<ActivityInfo> activityInfoList = activityInfoPage.getContent();
             for (ActivityInfo activityInfo : activityInfoList) {
                 if(StringUtils.isNotEmpty(activityInfo.getFileName())){
-                    activityInfo.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+activityInfo.getFileName());
+                    activityInfo.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+activityInfo.getFileName());
                 }
             }
 
@@ -256,7 +259,7 @@ public class ActivityInfoAPIController {
             }
 
             if(StringUtils.isNotEmpty(byUuid.getFileName())){
-                byUuid.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+byUuid.getFileName());
+                byUuid.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+byUuid.getFileName());
             }
 
             return new ResultCodeNew("0","",byUuid);

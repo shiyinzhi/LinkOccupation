@@ -83,6 +83,9 @@ public class AuditManageController {
     @Autowired
     WechatTemplateMsg wechatTemplateMsg;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     /**
      * 条件查询雇员信息
@@ -182,11 +185,11 @@ public class AuditManageController {
             }
 
             if(StringUtils.isNotEmpty(byUuid.getFrontIdcardPic())){
-                byUuid.setFrontIdcardPicPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+byUuid.getFrontIdcardPic());
+                byUuid.setFrontIdcardPicPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+byUuid.getFrontIdcardPic());
             }
 
             if(StringUtils.isNotEmpty(byUuid.getBackIdcardPic())){
-                byUuid.setBackIdcardPicPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+byUuid.getBackIdcardPic());
+                byUuid.setBackIdcardPicPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+byUuid.getBackIdcardPic());
             }
 
             return new ResultCodeNew("0","",byUuid);
@@ -370,7 +373,7 @@ public class AuditManageController {
             }
 
             if(StringUtils.isNotEmpty(byUuid.getBusinessLicensePic())){
-                byUuid.setBusinessLicensePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+byUuid.getBusinessLicensePic());
+                byUuid.setBusinessLicensePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+byUuid.getBusinessLicensePic());
             }
 
             return new ResultCodeNew("0","",byUuid);
@@ -479,11 +482,11 @@ public class AuditManageController {
             }
 
             if(StringUtils.isNotEmpty(byUuid.getFrontIdcardPic())){
-                byUuid.setFrontIdcardPicPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+byUuid.getFrontIdcardPic());
+                byUuid.setFrontIdcardPicPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+byUuid.getFrontIdcardPic());
             }
 
             if(StringUtils.isNotEmpty(byUuid.getBackIdcardPic())){
-                byUuid.setBackIdcardPicPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+byUuid.getBackIdcardPic());
+                byUuid.setBackIdcardPicPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+byUuid.getBackIdcardPic());
             }
 
             return new ResultCodeNew("0","",byUuid);

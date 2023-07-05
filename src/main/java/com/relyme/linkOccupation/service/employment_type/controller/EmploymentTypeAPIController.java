@@ -48,6 +48,9 @@ public class EmploymentTypeAPIController {
     @Autowired
     UserAccountDao userAccountDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     /**
      * 条件查询信息
@@ -106,7 +109,7 @@ public class EmploymentTypeAPIController {
                 }
 
                 if(StringUtils.isNotEmpty(employmentType.getTypeIcon())){
-                    employmentType.setTypeIconPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"repository"+ File.separator+employmentType.getTypeIcon());
+                    employmentType.setTypeIconPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"repository"+ File.separator+employmentType.getTypeIcon());
                 }
             });
 

@@ -40,6 +40,9 @@ public class WechatInfoController {
     @Autowired
     CustAccountDao custAccountDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
     Logger record_log = LoggerFactory.getLogger(WechatInfoController.class);
 
     RelymeWeiXinConfig abstractWeiXinConfig = new RelymeWeiXinConfig();
@@ -384,7 +387,7 @@ public class WechatInfoController {
             byte[] bytes = NetUtils.doPostGetBytes(url, jsonObject.toJSONString());
             String fileName = qrCodeDto.getCustUuid()+".png";
             NetUtils.BytesToFile(bytes, SysConfig.getSaveFilePath()+"upload"+ File.separator,fileName);
-            qrCodeResDto.setQrdownLoadPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+File.separator+fileName+"?v="+System.currentTimeMillis());
+            qrCodeResDto.setQrdownLoadPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+File.separator+fileName+"?v="+System.currentTimeMillis());
             return new ResultCodeNew("0", "",qrCodeResDto);
         }catch(Exception ex){
             ex.printStackTrace();

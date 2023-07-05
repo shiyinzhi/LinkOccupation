@@ -48,6 +48,9 @@ public class EnterpriseInfoAPIController {
     @Autowired
     WechatTemplateMsg wechatTemplateMsg;
 
+    @Autowired
+    SysConfig sysConfig;
+
     /**
      * 添加或修改
      * @return
@@ -185,7 +188,7 @@ public class EnterpriseInfoAPIController {
             List<EnterpriseInfo> content = enterpriseInfoPage.getContent();
             content.forEach(enterpriseInfo -> {
                 if(StringUtils.isNotEmpty(enterpriseInfo.getBusinessLicensePic())){
-                    enterpriseInfo.setBusinessLicensePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+enterpriseInfo.getBusinessLicensePic());
+                    enterpriseInfo.setBusinessLicensePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+enterpriseInfo.getBusinessLicensePic());
                 }
             });
 

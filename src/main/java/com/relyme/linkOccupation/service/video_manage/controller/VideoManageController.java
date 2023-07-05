@@ -61,6 +61,9 @@ public class VideoManageController {
     @Autowired
     ServicePackageDao servicePackageDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     /**
      * 条件查询信息
@@ -124,7 +127,7 @@ public class VideoManageController {
                 }
 
                 if(StringUtils.isEmpty(videoManage.getCosPath())){
-                    videoManage.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+videoManage.getFileName());
+                    videoManage.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+videoManage.getFileName());
                 }else{
                     videoManage.setFilePath(videoManage.getCosPath());
                 }

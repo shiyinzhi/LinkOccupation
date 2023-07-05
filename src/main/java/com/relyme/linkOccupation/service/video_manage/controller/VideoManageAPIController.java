@@ -67,6 +67,9 @@ public class VideoManageAPIController {
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
     /**
      * 条件查询视频信息
      * @param queryEntity
@@ -128,7 +131,7 @@ public class VideoManageAPIController {
                 }
 
                 if(StringUtils.isEmpty(videoManage.getCosPath())){
-                    videoManage.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+videoManage.getFileName());
+                    videoManage.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+videoManage.getFileName());
                 }else{
                     videoManage.setFilePath(videoManage.getCosPath());
                 }
@@ -228,7 +231,7 @@ public class VideoManageAPIController {
                 }
 
                 if(StringUtils.isEmpty(videoManage.getCosPath())){
-                    videoManage.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+ File.separator+videoManage.getFileName());
+                    videoManage.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+ File.separator+videoManage.getFileName());
                 }else{
                     videoManage.setFilePath(videoManage.getCosPath());
                 }
@@ -303,7 +306,7 @@ public class VideoManageAPIController {
             Page<VideoRecordView> videoCategoriePage = videoRecordViewDao.findAll(specification,pageable);
             List<VideoRecordView> content = videoCategoriePage.getContent();
             content.forEach(videoRecordView -> {
-                videoRecordView.setFilePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+File.separator+videoRecordView.getFileName());
+                videoRecordView.setFilePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+File.separator+videoRecordView.getFileName());
             });
 
             return new ResultCodeNew("0","",videoCategoriePage);

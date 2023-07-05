@@ -38,6 +38,9 @@ public class RollingPictureAPIController {
     @Autowired
     RollingPictureDao rollingPictureDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     /**
      * 条件查询信息
@@ -86,7 +89,7 @@ public class RollingPictureAPIController {
             List<RollingPicture> rollingPictureList = rollingPicturePage.getContent();
             for (RollingPicture rollingPicture : rollingPictureList) {
                 if(StringUtils.isNotEmpty(rollingPicture.getBannerTitle())){
-                    rollingPicture.setBannerPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"repository"+ File.separator+rollingPicture.getBannerTitle());
+                    rollingPicture.setBannerPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"repository"+ File.separator+rollingPicture.getBannerTitle());
                 }
             }
 

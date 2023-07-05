@@ -1,5 +1,6 @@
 package com.relyme.linkOccupation.service.common.wechatmsg;
 
+import com.relyme.linkOccupation.config.SysConfig;
 import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
 import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.wechat_msg.template.TemplateUtils;
@@ -23,6 +24,9 @@ public class WechatTemplateMsg {
     @Autowired
     CustAccountDao custAccountDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
     /**
      * 发送消息
      * @param custAccountUuid
@@ -39,11 +43,11 @@ public class WechatTemplateMsg {
             if(byUuid != null && StringUtils.isNotEmpty(byUuid.getUnionId())){
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("unionId", byUuid.getUnionId());
-//                jsonObject.put("remark", "ws");
+                jsonObject.put("remark", sysConfig.getPlatformRemark());
                 String json = jsonObject.toString();
 //                String kfUrl = "https://www.wdzxchn.com/wechatinfo/wechataccount/getByunionId";
-                String kfUrl = "https://www.beelinggong.com/wechatinfo/wechataccount/getByunionId";
-//                String kfUrl = "https://www.ctxthr.com/wechatinfows/wechataccount/getByunionId";
+//                String kfUrl = "https://www.beelinggong.com/wechatinfo/wechataccount/getByunionId";
+                String kfUrl = "https://www.ctxthr.com/wechatinfows/wechataccount/getByunionId";
                 record_log.info("通过unionid 获取公众号openid:"+kfUrl+ json);
                 String post = NetUtils.sendPost(kfUrl, json, "POST");
 

@@ -6,6 +6,7 @@ import com.relyme.linkOccupation.utils.file.FileUtils;
 import com.relyme.linkOccupation.utils.ueditor.UeditorImage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +21,9 @@ import java.util.List;
 @RestController
 @RequestMapping("api/fileupload")
 public class FileUploadAPI {
+
+    @Autowired
+    SysConfig sysConfig;
 
     @ApiOperation("上传文件 使用form-data 字段为 file")
     @RequestMapping(value="/upload",method = RequestMethod.POST)
@@ -55,7 +59,7 @@ public class FileUploadAPI {
             String fileName = files.get(0).getOriginalFilename();
             String path = FileUtils.saveFile(files.get(0), "upload");
 
-            image.setUrl(SysConfig.DOWNLOAD_PATH_REPOSITORY +"upload"+ File.separator +path);
+            image.setUrl(sysConfig.getDOWNLOAD_PATH_REPOSITORY() +"upload"+ File.separator +path);
             image.setState("SUCCESS");
             image.setOriginal(fileName);
             image.setTitle(path);

@@ -118,6 +118,12 @@ public class ServiceOrders extends BaseEntityForMysql {
     private int isBuyOffline;
 
     /**
+     * 是否已到期  0 否 1是
+     */
+    @Column(name = "is_expire", length = 3,columnDefinition="tinyint default 0")
+    private int isExpire;
+
+    /**
      * 企业规模 从订单价格来
      */
     @Transient
@@ -263,5 +269,13 @@ public class ServiceOrders extends BaseEntityForMysql {
 
     public void setSpread(BigDecimal spread) {
         this.spread = spread;
+    }
+
+    public int getIsExpire() {
+        return isExpire;
+    }
+
+    public void setIsExpire(int isExpire) {
+        this.isExpire = isExpire;
     }
 }

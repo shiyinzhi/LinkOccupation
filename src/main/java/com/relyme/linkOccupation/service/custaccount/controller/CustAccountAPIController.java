@@ -67,6 +67,9 @@ public class CustAccountAPIController {
     @Autowired
     IndividualEmployersDao individualEmployersDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     RelymeWeiXinConfig abstractWeiXinConfig = new RelymeWeiXinConfig();
     WeiXinUtil weiXinUtil = new WeiXinUtil(abstractWeiXinConfig);
@@ -262,7 +265,7 @@ public class CustAccountAPIController {
             byte[] bytes = NetUtils.doPostGetBytes(url, jsonObject.toJSONString());
             String fileName = qrCodeDto.getCustUuid()+".png";
             NetUtils.BytesToFile(bytes, SysConfig.getSaveFilePath()+"upload"+ File.separator,fileName);
-            qrCodeResDto.setQrdownLoadPath(SysConfig.DOWNLOAD_PATH_REPOSITORY+"upload"+File.separator+fileName+"?v="+System.currentTimeMillis());
+            qrCodeResDto.setQrdownLoadPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+File.separator+fileName+"?v="+System.currentTimeMillis());
 
             return new ResultCodeNew("0", "",qrCodeResDto);
         }catch(Exception ex){

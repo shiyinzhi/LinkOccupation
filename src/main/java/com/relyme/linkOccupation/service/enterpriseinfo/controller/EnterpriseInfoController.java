@@ -71,6 +71,9 @@ public class EnterpriseInfoController {
     @Autowired
     CustAccountDao custAccountDao;
 
+    @Autowired
+    SysConfig sysConfig;
+
 
     /**
      * 条件查询信息
@@ -131,7 +134,7 @@ public class EnterpriseInfoController {
             List<EnterpriseInfo> content = enterpriseInfoPage.getContent();
             content.forEach(enterpriseInfo -> {
                 if(StringUtils.isNotEmpty(enterpriseInfo.getBusinessLicensePic())){
-                    enterpriseInfo.setBusinessLicensePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+enterpriseInfo.getBusinessLicensePic());
+                    enterpriseInfo.setBusinessLicensePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+enterpriseInfo.getBusinessLicensePic());
                 }
             });
 
@@ -166,7 +169,7 @@ public class EnterpriseInfoController {
             }
 
             if(StringUtils.isNotEmpty(byUuid.getBusinessLicensePic())){
-                byUuid.setBusinessLicensePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+byUuid.getBusinessLicensePic());
+                byUuid.setBusinessLicensePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+byUuid.getBusinessLicensePic());
             }
 
             return new ResultCodeNew("0","",byUuid);
@@ -493,7 +496,7 @@ public class EnterpriseInfoController {
             List<EnterpriseInfo> content = enterpriseInfoPage.getContent();
             content.forEach(enterpriseInfo -> {
                 if(StringUtils.isNotEmpty(enterpriseInfo.getBusinessLicensePic())){
-                    enterpriseInfo.setBusinessLicensePath(SysConfig.DOWNLOAD_PATH_REPOSITORY+enterpriseInfo.getBusinessLicensePic());
+                    enterpriseInfo.setBusinessLicensePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+enterpriseInfo.getBusinessLicensePic());
                 }
             });
 

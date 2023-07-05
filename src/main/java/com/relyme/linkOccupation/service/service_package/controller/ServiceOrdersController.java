@@ -265,6 +265,19 @@ public class ServiceOrdersController {
                 throw new Exception("已购服务订单信息异常！");
             }
 
+            long dayDiff = DateUtil.dayDiff(new Date(), hasBuyOrder.getEndTime());
+            if(dayDiff < 0){
+                hasBuyOrder.setActive(0);
+                hasBuyOrder.setIsExpire(1);
+                serviceOrdersDao.save(hasBuyOrder);
+                throw new Exception("已购服务已到期，请重新购买！");
+            }
+
+//            dayDiff = DateUtil.dayDiff(hasBuyOrder.getStartTime(), new Date());
+//            if(dayDiff > 30 ){
+//
+//            }
+
             if(hasBuyOrder.getIsBuyOffline() != 1){
                 throw new Exception("已购服务订单未完成支付！");
             }
