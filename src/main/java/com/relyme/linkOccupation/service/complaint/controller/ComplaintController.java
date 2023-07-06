@@ -1,13 +1,17 @@
 package com.relyme.linkOccupation.service.complaint.controller;
 
 
+import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
 import com.relyme.linkOccupation.service.complaint.dao.ComplaintDao;
 import com.relyme.linkOccupation.service.complaint.dao.ComplaintViewDao;
 import com.relyme.linkOccupation.service.complaint.domain.Complaint;
 import com.relyme.linkOccupation.service.complaint.domain.ComplaintView;
 import com.relyme.linkOccupation.service.complaint.dto.ComplaintQueryDto;
 import com.relyme.linkOccupation.service.complaint.dto.ComplaintUuidDto;
+import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
+import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
+import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
@@ -55,6 +59,12 @@ public class ComplaintController {
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
 
+    @Autowired
+    CustAccountDao custAccountDao;
+
+    @Autowired
+    WechatTemplateMsg wechatTemplateMsg;
+
 
     /**
      * 投诉建议处理
@@ -93,6 +103,15 @@ public class ComplaintController {
             complaint.setHandleHours(DateUtil.hourDiffScal(complaint.getAddTime(),new Date(),2));
 
             complaintDao.save(complaint);
+
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(complaint.getEnterpriseUuid());
+            if(enterpriseInfo != null){
+                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+                if(byMobile != null){
+                    //发送模板消息
+                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的投诉建议已得到处理，请注意查阅和评价","投诉建议","投诉建议已处理");
+                }
+            }
 
             return new ResultCodeNew("0","",complaint);
         }catch(Exception ex){

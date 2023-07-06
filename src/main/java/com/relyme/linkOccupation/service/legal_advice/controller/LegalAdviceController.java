@@ -1,7 +1,11 @@
 package com.relyme.linkOccupation.service.legal_advice.controller;
 
 
+import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
+import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
+import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
+import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.legal_advice.dao.LegalAdviceDao;
 import com.relyme.linkOccupation.service.legal_advice.dao.LegalAdviceViewDao;
 import com.relyme.linkOccupation.service.legal_advice.domain.LegalAdvice;
@@ -55,6 +59,12 @@ public class LegalAdviceController {
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
 
+    @Autowired
+    CustAccountDao custAccountDao;
+
+    @Autowired
+    WechatTemplateMsg wechatTemplateMsg;
+
 
     /**
      * 法律咨询处理
@@ -93,6 +103,15 @@ public class LegalAdviceController {
             legalAdvice.setHandleHours(DateUtil.hourDiffScal(legalAdvice.getAddTime(),new Date(),2));
 
             legalAdviceDao.save(legalAdvice);
+
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(legalAdvice.getEnterpriseUuid());
+            if(enterpriseInfo != null){
+                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+                if(byMobile != null){
+                    //发送模板消息
+                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的法律咨询已得到处理，请注意查阅和评价","法律咨询","法律咨询已处理");
+                }
+            }
 
             return new ResultCodeNew("0","",legalAdvice);
         }catch(Exception ex){

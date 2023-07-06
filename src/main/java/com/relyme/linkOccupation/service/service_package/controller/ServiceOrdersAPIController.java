@@ -84,8 +84,7 @@ public class ServiceOrdersAPIController {
         try{
 
             //查询是否有未到期的服务订单
-            Date date = new Date();
-            ServiceOrders hasBuyServiceOrder = serviceOrdersDao.findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuid(date, date, queryEntity.getEnterpriseUuid());
+            ServiceOrders hasBuyServiceOrder = serviceOrdersDao.findByEnterpriseUuidAndActive(queryEntity.getEnterpriseUuid(),1);
             if(hasBuyServiceOrder != null){
                 throw new Exception("您已购买订单，如需升级套餐请联系管理员！");
             }
@@ -170,6 +169,12 @@ public class ServiceOrdersAPIController {
     @RequestMapping(value="/buyServicePackageWithOutSpeUuid",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object buyServicePackageWithOutSpeUuid(@Validated @RequestBody ServiceOrdersDto queryEntity, HttpServletRequest request) {
         try{
+
+            //查询是否有未到期的服务订单
+            ServiceOrders hasBuyServiceOrder = serviceOrdersDao.findByEnterpriseUuidAndActive(queryEntity.getEnterpriseUuid(),1);
+            if(hasBuyServiceOrder != null){
+                throw new Exception("您已购买订单，如需升级套餐请联系管理员！");
+            }
 
             if(StringUtils.isEmpty(queryEntity.getServicePackageUuid())){
                 throw new Exception("套餐uuid不能为空！");

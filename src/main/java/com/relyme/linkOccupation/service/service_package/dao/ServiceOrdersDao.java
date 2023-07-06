@@ -49,6 +49,14 @@ public interface ServiceOrdersDao extends ExtJpaRepository<ServiceOrders, String
 
 
     /**
+     * 通过企业uuid 和状态查询
+     * @param enterpriseUuid
+     * @param active
+     * @return
+     */
+    ServiceOrders findByEnterpriseUuidAndActive(String enterpriseUuid,int active);
+
+    /**
      * 更具时间段查询服务订单数量
      * @return
      */

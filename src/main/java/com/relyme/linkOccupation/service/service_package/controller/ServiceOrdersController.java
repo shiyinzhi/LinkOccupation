@@ -1,6 +1,7 @@
 package com.relyme.linkOccupation.service.service_package.controller;
 
 
+import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
 import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
 import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
@@ -81,6 +82,9 @@ public class ServiceOrdersController {
     @Autowired
     CustAccountDao custAccountDao;
 
+    @Autowired
+    WechatTemplateMsg wechatTemplateMsg;
+
 
     /**
      * 订单处理
@@ -106,6 +110,11 @@ public class ServiceOrdersController {
             ServiceOrders serviceOrders = serviceOrdersDao.findByUuid(queryEntity.getUuid());
             if(serviceOrders == null){
                 throw new Exception("订单信息异常！");
+            }
+
+            ServicePackage servicePackage = servicePackageDao.findByUuid(serviceOrders.getServicePackageUuid());
+            if(servicePackage == null){
+                throw new Exception("套餐信息异常！");
             }
 
             serviceOrders.setIsBuyOffline(queryEntity.getIsBuyOffline());
@@ -158,6 +167,16 @@ public class ServiceOrdersController {
                 }
 
                 serviceStatusDao.save(serviceStatusList);
+
+
+                EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
+                if(enterpriseInfo != null){
+                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+                    if(byMobile != null){
+                        //发送模板消息
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您已购买套餐："+servicePackage.getPackageName(),"套餐购买","套餐购买成功");
+                    }
+                }
             }
 
             return new ResultCodeNew("0","",serviceOrders);
