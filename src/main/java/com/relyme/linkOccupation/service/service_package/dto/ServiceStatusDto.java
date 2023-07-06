@@ -23,13 +23,13 @@ public class ServiceStatusDto {
      * 服务进度 默认进度为0
      */
     @ApiModelProperty("服务进度")
-    BigDecimal statusProcess = new BigDecimal(0);
+    BigDecimal statusProcess;
 
     /**
      * 服务次数
      */
     @ApiModelProperty("服务次数")
-    private int serviceCount;
+    private Integer serviceCount;
 
 
     public String getUuid() {
@@ -48,11 +48,11 @@ public class ServiceStatusDto {
         this.statusProcess = statusProcess;
     }
 
-    public int getServiceCount() {
+    public Integer getServiceCount() {
         return serviceCount;
     }
 
-    public void setServiceCount(int serviceCount) {
+    public void setServiceCount(Integer serviceCount) {
         this.serviceCount = serviceCount;
     }
 }

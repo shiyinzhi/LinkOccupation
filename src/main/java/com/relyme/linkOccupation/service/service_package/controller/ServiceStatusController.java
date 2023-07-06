@@ -181,12 +181,10 @@ public class ServiceStatusController {
             }
 
             byUuid.setUserAccountUuid(userAccount.getUuid());
-            byUuid.setServiceCountUsed(byUuid.getServiceCountUsed()+(byUuid.getServiceCount()-queryEntity.getServiceCount()));
-            byUuid.setServiceCount(queryEntity.getServiceCount());
-            byUuid.setStatusProcess(queryEntity.getStatusProcess());
+            if(queryEntity.getServiceCount() != null){
+                byUuid.setServiceCountUsed(byUuid.getServiceCountUsed()+(byUuid.getServiceCount()-queryEntity.getServiceCount()));
+                byUuid.setServiceCount(queryEntity.getServiceCount());
 
-            if((queryEntity.getStatusProcess().compareTo(new BigDecimal(100)) == 0 && queryEntity.getServiceCount()==0) ||
-                    (queryEntity.getStatusProcess().compareTo(new BigDecimal(0))==0 && queryEntity.getServiceCount()==0)){
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(byUuid.getEnterpriseUuid());
                 if(enterpriseInfo != null){
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
@@ -196,20 +194,36 @@ public class ServiceStatusController {
                     }
                 }
 
-                byUuid.setHasFinished(1);
-                byUuid.setActive(0);
+                if(queryEntity.getServiceCount() ==0){
+                    byUuid.setHasFinished(1);
+                    byUuid.setActive(0);
+                }
                 serviceStatusDao.save(byUuid);
+            }
 
+            if(queryEntity.getStatusProcess() != null){
+                byUuid.setStatusProcess(queryEntity.getStatusProcess());
 
-                //重新生成一条服务信息
-                if(queryEntity.getStatusProcess().compareTo(new BigDecimal(100)) == 0 && queryEntity.getServiceCount()==0){
+                if(queryEntity.getStatusProcess().compareTo(new BigDecimal(100)) == 0){
+                    EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(byUuid.getEnterpriseUuid());
+                    if(enterpriseInfo != null){
+                        CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+                        if(byMobile != null){
+                            //发送模板消息
+                            wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
+                        }
+                    }
+
+                    byUuid.setHasFinished(1);
+                    byUuid.setActive(0);
+                    serviceStatusDao.save(byUuid);
+
                     ServiceStatus serviceStatus = new ServiceStatus();
                     new BeanCopyUtil().copyProperties(serviceStatus,byUuid,true,new String[]{"sn","uuid"});
                     serviceStatus.setStatusProcess(new BigDecimal(0));
                     serviceStatus.setHasFinished(0);
                     serviceStatusDao.save(serviceStatus);
                 }
-
             }
 
             return new ResultCodeNew("0","",byUuid);
@@ -255,16 +269,20 @@ public class ServiceStatusController {
                 for (ServiceStatusDto serviceStatusDto : queryEntity) {
                     //服务已完成
                     if(serviceStatus.getUuid().equals(serviceStatusDto.getUuid())){
-                        if((serviceStatusDto.getStatusProcess().compareTo(new BigDecimal(100)) == 0 && serviceStatusDto.getServiceCount()==0) ||
-                                (serviceStatusDto.getStatusProcess().compareTo(new BigDecimal(0))==0 && serviceStatusDto.getServiceCount()==0)){
+                        if((serviceStatusDto.getStatusProcess().compareTo(new BigDecimal(100)) == 0 || serviceStatusDto.getServiceCount()==0)){
                             hasFinished.add(serviceStatus);
                             serviceStatus.setActive(0);
                             serviceStatus.setHasFinished(1);
                         }
 
+                        int useCount = serviceStatus.getServiceCount()-serviceStatusDto.getServiceCount();
+                        if(serviceStatusDto.getServiceCount() != null && useCount > 0){
+                            hasFinished.add(serviceStatus);
+                        }
+
                         //更新状态
                         serviceStatus.setUserAccountUuid(userAccount.getUuid());
-                        serviceStatus.setServiceCountUsed(serviceStatus.getServiceCountUsed()+(serviceStatus.getServiceCount()-serviceStatusDto.getServiceCount()));
+                        serviceStatus.setServiceCountUsed(serviceStatus.getServiceCountUsed()+(useCount));
                         serviceStatus.setStatusProcess(serviceStatusDto.getStatusProcess());
                         serviceStatus.setServiceCount(serviceStatusDto.getServiceCount());
                         hasUpdates.add(serviceStatus);
