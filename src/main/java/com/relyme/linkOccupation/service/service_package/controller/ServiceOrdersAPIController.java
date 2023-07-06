@@ -425,14 +425,10 @@ public class ServiceOrdersAPIController {
                     if(experiencePackCount >= serviceSpecialOffer.getSpecialCounts()){
                         throw new Exception("购买体验包次数已达上限！");
                     }else{
-                        BigDecimal disCountMoney = servicePrices.getMonthPrice()
-                                .multiply(new BigDecimal(serviceSpecialOffer.getSpecialMonthes()))
-                                .multiply((serviceSpecialOffer.getServiceDiscounts().divide(new BigDecimal(100)))).setScale(2,BigDecimal.ROUND_HALF_UP);
-                        buyMoney = buyMoney.subtract(disCountMoney);
-                        if(buyMoney.compareTo(new BigDecimal(0)) <0){
-                            buyMoney = new BigDecimal(0);
-                        }
+                        buyMoney = getMonthBuyPrice(queryEntity, servicePrices, serviceSpecialOffer);
                     }
+                }else{
+                    buyMoney = getMonthBuyPrice(queryEntity, servicePrices, serviceSpecialOffer);
                 }
             }
             //充值包  购买年数 赠送月数
@@ -449,6 +445,30 @@ public class ServiceOrdersAPIController {
 
         serviceOrders.setBuyMoney(buyMoney);
         return serviceOrders;
+    }
+
+    /**
+     * 获取按月份购买的价格
+     * @param queryEntity
+     * @param servicePrices
+     * @param serviceSpecialOffer
+     * @return
+     */
+    private BigDecimal getMonthBuyPrice(ServiceOrdersBuyPriceDto queryEntity, ServicePrices servicePrices, ServiceSpecialOffer serviceSpecialOffer) {
+        BigDecimal buyMoney;//优惠金额
+        BigDecimal disCountMoney = servicePrices.getMonthPrice()
+                .multiply(new BigDecimal(serviceSpecialOffer.getSpecialMonthes()))
+                .multiply((serviceSpecialOffer.getServiceDiscounts()));
+        //如果优惠为3个月则计算后去掉末尾的数字
+        if(serviceSpecialOffer.getSpecialMonthes() == 3){
+            int tt = disCountMoney.intValue()/10*10;
+            disCountMoney = new BigDecimal(tt);
+        }
+        buyMoney = disCountMoney.add(servicePrices.getMonthPrice().multiply(new BigDecimal(queryEntity.getBuyNum()-serviceSpecialOffer.getSpecialMonthes())));
+        if(buyMoney.compareTo(new BigDecimal(0)) <0){
+            buyMoney = new BigDecimal(0);
+        }
+        return buyMoney;
     }
 
 

@@ -128,6 +128,14 @@ public class CustAccountAPIController {
                     if(individualEmployers.getIsInBlacklist() == 1){
                         throw new Exception("您正在黑名单中,请联系管理员！");
                     }
+
+                    if(StringUtils.isNotEmpty(individualEmployers.getFrontIdcardPic())){
+                        individualEmployers.setFrontIdcardPicPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+File.separator+individualEmployers.getFrontIdcardPic());
+                    }
+
+                    if(StringUtils.isNotEmpty(individualEmployers.getBackIdcardPic())){
+                        individualEmployers.setBackIdcardPicPath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+File.separator+individualEmployers.getBackIdcardPic());
+                    }
                 }
             }
 
@@ -138,6 +146,10 @@ public class CustAccountAPIController {
                 for (EnterpriseInfo enterpriseInfo : byCustAccountUuid) {
                     if(enterpriseInfo.getIsInBlacklist() == 1){
                         throw new Exception("您正在黑名单中,请联系管理员！");
+                    }
+
+                    if(StringUtils.isNotEmpty(enterpriseInfo.getBusinessLicensePic())){
+                        enterpriseInfo.setBusinessLicensePath(sysConfig.getDOWNLOAD_PATH_REPOSITORY()+"upload"+File.separator+enterpriseInfo.getBusinessLicensePic());
                     }
                 }
             }

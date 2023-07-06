@@ -34,6 +34,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -118,6 +119,7 @@ public class LegalAdviceAPIController {
 
             legalAdvice.setHandleSatisfied(queryEntity.getHandleSatisfied());
             legalAdvice.setHandleStatus(2);
+            legalAdvice.setHandleSatisfiedTime(new Date());
             legalAdviceDao.save(legalAdvice);
 
             return new ResultCodeNew("0","",legalAdvice);

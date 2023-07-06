@@ -107,6 +107,12 @@ public class Test {
         double v = DateUtil.hourDiffScal(date, new Date(), 2);
         System.out.println("v = " + v);
 
+        int aa = 6192;
+        aa = aa /10;
+        System.out.println("aa = " + aa);
+        aa = aa * 10;
+        System.out.println("aa = " + aa);
+
 //        redExel();
 
 //        userLogin();
