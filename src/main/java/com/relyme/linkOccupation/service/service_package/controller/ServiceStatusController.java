@@ -181,7 +181,9 @@ public class ServiceStatusController {
             }
 
             byUuid.setUserAccountUuid(userAccount.getUuid());
-            if(queryEntity.getServiceCount() != null){
+
+            //按次数消费
+            if(byUuid.getServiceUseType() == 1){
                 byUuid.setServiceCountUsed(byUuid.getServiceCountUsed()+(byUuid.getServiceCount()-queryEntity.getServiceCount()));
                 byUuid.setServiceCount(queryEntity.getServiceCount());
 
@@ -201,7 +203,7 @@ public class ServiceStatusController {
                 serviceStatusDao.save(byUuid);
             }
 
-            if(queryEntity.getStatusProcess() != null){
+            if(byUuid.getServiceUseType() == 2){
                 byUuid.setStatusProcess(queryEntity.getStatusProcess());
 
                 if(queryEntity.getStatusProcess().compareTo(new BigDecimal(100)) == 0){
@@ -269,22 +271,33 @@ public class ServiceStatusController {
                 for (ServiceStatusDto serviceStatusDto : queryEntity) {
                     //服务已完成
                     if(serviceStatus.getUuid().equals(serviceStatusDto.getUuid())){
-                        if((serviceStatusDto.getStatusProcess().compareTo(new BigDecimal(100)) == 0 || serviceStatusDto.getServiceCount()==0)){
-                            hasFinished.add(serviceStatus);
-                            serviceStatus.setActive(0);
-                            serviceStatus.setHasFinished(1);
+                        //按次数使用
+                        if(serviceStatus.getServiceUseType() == 1){
+                            if(serviceStatusDto.getServiceCount()==0){
+                                hasFinished.add(serviceStatus);
+                                serviceStatus.setActive(0);
+                                serviceStatus.setHasFinished(1);
+                            }
+
+                            //如果使用了一次也算完成了服务
+                            int useCount = serviceStatus.getServiceCount()-serviceStatusDto.getServiceCount();
+                            if(useCount > 0){
+                                hasFinished.add(serviceStatus);
+                            }
+                            serviceStatus.setServiceCountUsed(serviceStatus.getServiceCountUsed()+(useCount));
+                            serviceStatus.setServiceCount(serviceStatusDto.getServiceCount());
+                        }else if(serviceStatus.getServiceUseType() == 2){
+                            if(serviceStatusDto.getStatusProcess().compareTo(new BigDecimal(100)) == 0){
+                                hasFinished.add(serviceStatus);
+                                serviceStatus.setActive(0);
+                                serviceStatus.setHasFinished(1);
+                            }
+                            serviceStatus.setStatusProcess(serviceStatusDto.getStatusProcess());
                         }
 
-                        int useCount = serviceStatus.getServiceCount()-serviceStatusDto.getServiceCount();
-                        if(serviceStatusDto.getServiceCount() != null && useCount > 0){
-                            hasFinished.add(serviceStatus);
-                        }
 
                         //更新状态
                         serviceStatus.setUserAccountUuid(userAccount.getUuid());
-                        serviceStatus.setServiceCountUsed(serviceStatus.getServiceCountUsed()+(useCount));
-                        serviceStatus.setStatusProcess(serviceStatusDto.getStatusProcess());
-                        serviceStatus.setServiceCount(serviceStatusDto.getServiceCount());
                         hasUpdates.add(serviceStatus);
                     }
 
@@ -303,7 +316,7 @@ public class ServiceStatusController {
                 }
 
                 //重新生成一条服务信息
-                if(hasFinish.getStatusProcess().compareTo(new BigDecimal(100)) == 0 && hasFinish.getServiceCount()==0){
+                if(hasFinish.getServiceUseType() == 2){
                     ServiceStatus serviceStatus = new ServiceStatus();
                     new BeanCopyUtil().copyProperties(serviceStatus,hasFinish,true,new String[]{"sn","uuid"});
                     serviceStatus.setStatusProcess(new BigDecimal(0));

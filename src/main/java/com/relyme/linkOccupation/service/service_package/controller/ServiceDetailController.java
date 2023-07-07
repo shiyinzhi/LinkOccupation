@@ -88,6 +88,12 @@ public class ServiceDetailController {
                 new BeanCopyUtil().copyProperties(byUuid,entity,true,new String[]{"sn","uuid"});
             }
             byUuid.setUserAccountUuid(userAccount.getUuid());
+            //服务通过进度使用
+            if(entity.getServiceCount() == 0){
+                byUuid.setServiceUseType(2);
+            }else if(entity.getServiceCount() > 0){
+                byUuid.setServiceUseType(1);
+            }
             serviceDetailDao.save(byUuid);
 
             return new ResultCodeNew("0","更新成功！",byUuid);

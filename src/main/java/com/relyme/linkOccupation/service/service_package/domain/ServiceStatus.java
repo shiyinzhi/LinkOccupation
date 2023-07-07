@@ -85,6 +85,12 @@ public class ServiceStatus extends BaseEntityForMysql {
     @Column(name = "has_finished", length = 3,columnDefinition="tinyint default 0")
     private int hasFinished;
 
+    /**
+     * 服务内容使用类型 0不适用 1按次数使用 2按进度使用
+     */
+    @Column(name = "service_use_type", length = 3,columnDefinition="int default 0")
+    private int serviceUseType;
+
 
     public String getUserAccountUuid() {
         return userAccountUuid;
@@ -164,5 +170,13 @@ public class ServiceStatus extends BaseEntityForMysql {
 
     public void setServiceCountUsed(int serviceCountUsed) {
         this.serviceCountUsed = serviceCountUsed;
+    }
+
+    public int getServiceUseType() {
+        return serviceUseType;
+    }
+
+    public void setServiceUseType(int serviceUseType) {
+        this.serviceUseType = serviceUseType;
     }
 }

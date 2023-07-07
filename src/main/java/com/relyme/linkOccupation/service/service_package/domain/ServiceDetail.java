@@ -51,6 +51,12 @@ public class ServiceDetail extends BaseEntityForMysql {
     @Column(name = "service_limit", length = 3,columnDefinition="int default 0")
     private int serviceLimit;
 
+    /**
+     * 服务内容使用类型 0不适用 1按次数使用 2按进度使用
+     */
+    @Column(name = "service_use_type", length = 3,columnDefinition="int default 0")
+    private int serviceUseType;
+
 //    /**
 //     * 开始时间
 //     */
@@ -121,5 +127,13 @@ public class ServiceDetail extends BaseEntityForMysql {
 
     public void setServicePackageUuid(String servicePackageUuid) {
         this.servicePackageUuid = servicePackageUuid;
+    }
+
+    public int getServiceUseType() {
+        return serviceUseType;
+    }
+
+    public void setServiceUseType(int serviceUseType) {
+        this.serviceUseType = serviceUseType;
     }
 }

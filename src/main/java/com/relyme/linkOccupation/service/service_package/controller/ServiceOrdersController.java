@@ -163,6 +163,7 @@ public class ServiceOrdersController {
                     serviceStatus.setServiceTime(DateUtil.stringtoDate(DateUtil.dateToString(new Date(),DateUtil.MONTG_DATE_FORMAT),DateUtil.MONTG_DATE_FORMAT));
                     serviceStatus.setStatusProcess(new BigDecimal(0));
                     serviceStatus.setServiceCount(serviceDetail.getServiceCount());
+                    serviceStatus.setServiceUseType(serviceDetail.getServiceUseType());
                     serviceStatusList.add(serviceStatus);
                 }
 
@@ -494,6 +495,7 @@ public class ServiceOrdersController {
                 serviceStatus.setServiceTime(DateUtil.stringtoDate(DateUtil.dateToString(new Date(),DateUtil.MONTG_DATE_FORMAT),DateUtil.MONTG_DATE_FORMAT));
                 serviceStatus.setStatusProcess(new BigDecimal(0));
                 serviceStatus.setServiceCount(serviceDetail.getServiceCount());
+                serviceStatus.setServiceUseType(serviceDetail.getServiceUseType());
                 serviceStatusList.add(serviceStatus);
             }
 
