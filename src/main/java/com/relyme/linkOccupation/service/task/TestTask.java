@@ -568,7 +568,7 @@ public class TestTask {
         Date startTime = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startTime);
-        calendar.set(Calendar.DAY_OF_MONTH,3);
+        calendar.set(Calendar.DAY_OF_MONTH,5);
         Date endTime = calendar.getTime();
         int statusTotalCount = serviceOrdersDao.getServiceOrderCountByTimeRange(DateUtil.dateToString(startTime,DateUtil.FORMAT_ONE),DateUtil.dateToString(endTime,DateUtil.FORMAT_ONE));
 
@@ -623,7 +623,7 @@ public class TestTask {
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的服务即将到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务即将到期");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您的服务即将到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务即将到期");
                     }
                 }
 
