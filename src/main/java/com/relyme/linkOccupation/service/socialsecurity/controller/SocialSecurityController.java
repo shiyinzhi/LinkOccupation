@@ -224,7 +224,7 @@ public class SocialSecurityController {
                 CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                 if(byMobile != null){
                     //发送模板消息
-                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已为"+byUuid.getRosterName()+"完成社保代缴服务","代缴社保","已完成代缴");
+                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+byUuid.getRosterName()+"完成社保代缴服务","代缴社保","已完成代缴");
                 }
             }
 
@@ -272,7 +272,7 @@ public class SocialSecurityController {
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已为"+hasUpdate.getRosterName()+"完成社保代缴服务","代缴社保","已完成代缴");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+hasUpdate.getRosterName()+"完成社保代缴服务","代缴社保","已完成代缴");
                     }
                 }
             }

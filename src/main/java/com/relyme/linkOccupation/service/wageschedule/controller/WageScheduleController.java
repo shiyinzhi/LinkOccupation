@@ -213,7 +213,7 @@ public class WageScheduleController {
                 CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                 if(byMobile != null){
                     //发送模板消息
-                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已为"+byUuid.getRosterName()+"完成工资发放","工资发放","已完成发放");
+                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+byUuid.getRosterName()+"完成工资发放","工资发放","已完成发放");
                 }
             }
 
@@ -261,7 +261,7 @@ public class WageScheduleController {
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已为"+hasUpdate.getRosterName()+"完成工资发放","工资发放","已完成发放");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+hasUpdate.getRosterName()+"完成工资发放","工资发放","已完成发放");
                     }
                 }
             }
@@ -564,8 +564,8 @@ public class WageScheduleController {
                 if(row.getCell(30) != null){
                     remark = row.getCell(30).getStringCellValue();
                     List<EnterpriseInfo> byEnterpriseName = enterpriseInfoDao.findByEnterpriseName(remark);
-                    if(byEnterpriseName == null || byEnterpriseName.size() > 1){
-                        throw new Exception("请确认公司信息正确！");
+                    if(byEnterpriseName == null || byEnterpriseName.size() > 1 || byEnterpriseName.size()==0){
+                        throw new Exception("请确认公司信息正确！请检查第"+(i+1)+"行数据");
                     }
                     enterpriseInfo = byEnterpriseName.get(0);
                 }

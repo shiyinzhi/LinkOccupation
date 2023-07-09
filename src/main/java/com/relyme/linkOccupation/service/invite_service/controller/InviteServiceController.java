@@ -107,7 +107,7 @@ public class InviteServiceController {
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成招聘，招聘人数"+byUuid.getInviteNums()+"人","企业招聘","已完成招聘");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成招聘，招聘人数"+byUuid.getInviteNums()+"人","企业招聘","已完成招聘");
                     }
                 }
             }

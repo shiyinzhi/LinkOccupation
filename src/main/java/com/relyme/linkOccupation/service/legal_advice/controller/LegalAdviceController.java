@@ -109,7 +109,7 @@ public class LegalAdviceController {
                 CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                 if(byMobile != null){
                     //发送模板消息
-                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的法律咨询已得到处理，请注意查阅和评价","法律咨询","法律咨询已处理");
+                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/message",null,"您的法律咨询已得到处理，请注意查阅和评价","法律咨询","法律咨询已处理");
                 }
             }
 

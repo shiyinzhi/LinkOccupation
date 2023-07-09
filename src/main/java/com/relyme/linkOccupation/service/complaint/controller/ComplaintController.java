@@ -109,7 +109,7 @@ public class ComplaintController {
                 CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                 if(byMobile != null){
                     //发送模板消息
-                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的投诉建议已得到处理，请注意查阅和评价","投诉建议","投诉建议已处理");
+                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/message",null,"您的投诉建议已得到处理，请注意查阅和评价","投诉建议","投诉建议已处理");
                 }
             }
 

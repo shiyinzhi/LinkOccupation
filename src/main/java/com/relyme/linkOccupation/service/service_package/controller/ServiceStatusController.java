@@ -192,7 +192,7 @@ public class ServiceStatusController {
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
                     }
                 }
 
@@ -212,7 +212,7 @@ public class ServiceStatusController {
                         CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                         if(byMobile != null){
                             //发送模板消息
-                            wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
+                            wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
                         }
                     }
 
@@ -311,7 +311,7 @@ public class ServiceStatusController {
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已完成服务"+hasFinish.getServiceContent(),"服务状态","已完成服务");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+hasFinish.getServiceContent(),"服务状态","已完成服务");
                     }
                 }
 
