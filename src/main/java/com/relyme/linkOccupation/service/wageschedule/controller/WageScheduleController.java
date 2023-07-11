@@ -255,13 +255,14 @@ public class WageScheduleController {
 
             wageScheduleDao.save(hasUpdates);
 
-            for (WageSchedule hasUpdate : hasUpdates) {
-                EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(hasUpdate.getEnterpriseUuid());
+            if(hasUpdates != null && hasUpdates.size() > 0){
+                WageSchedule wageSchedule = hasUpdates.get(0);
+                EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(wageSchedule.getEnterpriseUuid());
                 if(enterpriseInfo != null){
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+hasUpdate.getRosterName()+"完成工资发放","工资发放","已完成发放");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成工资发放","工资发放","已完成发放");
                     }
                 }
             }
