@@ -266,13 +266,14 @@ public class SocialSecurityController {
 
             insuredPersonChangeDao.save(hasUpdates);
 
-            for (InsuredPersonChange hasUpdate : hasUpdates) {
-                EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(hasUpdate.getEnterpriseUuid());
+            if(hasUpdates != null && hasUpdates.size() > 0){
+                InsuredPersonChange insuredPersonChange =hasUpdates.get(0);
+                EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(insuredPersonChange.getEnterpriseUuid());
                 if(enterpriseInfo != null){
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+hasUpdate.getRosterName()+"完成社保代缴服务","代缴社保","已完成代缴");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成社保代缴服务","代缴社保","已完成代缴");
                     }
                 }
             }
