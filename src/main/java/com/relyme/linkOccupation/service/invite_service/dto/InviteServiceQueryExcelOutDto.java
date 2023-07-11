@@ -9,18 +9,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 
 /**
- * 招聘服务InviteServiceQueryDto
+ * 招聘服务InviteServiceQueryExcelOutDto
  * @author shiyinzhi
  */
-@ApiModel(value = "招聘服务InviteServiceQueryDto", description = "招聘服务InviteServiceQueryDto")
-public class InviteServiceQueryDto {
-
-
-    @ApiModelProperty("当前页数")
-    private int page = 1;
-
-    @ApiModelProperty("每页显示条数")
-    private int pageSize = 10;
+@ApiModel(value = "招聘服务InviteServiceQueryExcelOutDto", description = "招聘服务InviteServiceQueryExcelOutDto")
+public class InviteServiceQueryExcelOutDto {
 
     /**
      * 企业UUID
@@ -47,22 +40,6 @@ public class InviteServiceQueryDto {
     @DateTimeFormat(pattern = "yyyy-MM")
     @JsonFormat(pattern = "yyyy-MM",timezone="GMT+8")
     private Date inviteTime;
-
-    public int getPage() {
-        return page;
-    }
-
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
 
     public String getEnterpriseUuid() {
         return enterpriseUuid;

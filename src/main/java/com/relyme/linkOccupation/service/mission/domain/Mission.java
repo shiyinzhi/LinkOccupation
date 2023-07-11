@@ -191,6 +191,12 @@ public class Mission extends BaseEntityForMysql {
     @Transient
     private int isRePublish = 0;
 
+    /**
+     * 是否隐藏手机号
+     */
+    @Transient
+    private int ishideMobile = 1;
+
 
     public String getCustAccountUuid() {
         return custAccountUuid;
@@ -422,5 +428,13 @@ public class Mission extends BaseEntityForMysql {
 
     public void setPostUuid(String postUuid) {
         this.postUuid = postUuid;
+    }
+
+    public int getIshideMobile() {
+        return ishideMobile;
+    }
+
+    public void setIshideMobile(int ishideMobile) {
+        this.ishideMobile = ishideMobile;
     }
 }

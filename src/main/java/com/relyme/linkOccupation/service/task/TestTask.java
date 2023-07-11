@@ -714,6 +714,7 @@ public class TestTask {
             Page<ServiceOrders> missionPage = serviceOrdersDao.findAll(specification,pageable);
             List<ServiceOrders> missionList = missionPage.getContent();
             List<ServiceOrders> updateList = new ArrayList<>();
+            List<EnterpriseInfo> updateEnInfoList = new ArrayList<>();
             missionList.forEach(serviceOrders -> {
                 //消息提醒服务即将到期
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
@@ -725,9 +726,18 @@ public class TestTask {
                     }
                 }
 
+                //跟新订单信息
                 serviceOrders.setActive(0);
                 serviceOrders.setIsExpire(1);
                 updateList.add(serviceOrders);
+
+                //更新企业信息
+                enterpriseInfo.setServicePackageUuid(null);
+                enterpriseInfo.setServiceOrdersUuid(null);
+                updateEnInfoList.add(enterpriseInfo);
+
+                //更新服务状态信息
+                serviceStatusDao.updateServiceStatusUnActive(enterpriseInfo.getUuid());
 
                 try {
                     Thread.sleep(2000);
@@ -737,6 +747,9 @@ public class TestTask {
             });
 
             serviceOrdersDao.save(updateList);
+            enterpriseInfoDao.save(updateEnInfoList);
+
+
 
         }
     }

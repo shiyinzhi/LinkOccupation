@@ -589,12 +589,12 @@ public class MissionAPIController {
                 byUuid.setEmploymentTypeName(byUuid1.getTypeName());
             }
 
-            if(StringUtils.isNotEmpty(entity.getEmployeeUuid())){
-                MissionRecord missionRecord = missionRecordDao.findByMissionUuidAndEmployeeUuid(byUuid.getUuid(),entity.getEmployeeUuid());
-                if(missionRecord != null){
-                    byUuid.setJoin(true);
-                }
-            }
+//            if(StringUtils.isNotEmpty(entity.getEmployeeUuid())){
+//                MissionRecord missionRecord = missionRecordDao.findByMissionUuidAndEmployeeUuid(byUuid.getUuid(),entity.getEmployeeUuid());
+//                if(missionRecord != null){
+//                    byUuid.setJoin(true);
+//                }
+//            }
 
             //个人雇主
             if(byUuid.getEmployerType() == EmployerTypeStatu.GRGZ.getCode()){
@@ -629,6 +629,20 @@ public class MissionAPIController {
                 MissionRecord missionRecord = missionRecordDao.findByMissionUuidAndEmployeeUuid(byUuid.getUuid(), entity.getEmployeeUuid());
                 if(missionRecord != null){
                     byUuid.setJoin(true);
+
+                    //以下状态显示手机号码，其他状态隐藏
+                    //1雇主已确认 5双方已确认 6雇员确认已完成 7待评价 8双方已评价  10雇主已评价 11雇员已评价 12雇主确认已完成
+                    if(missionRecord.getMissionRecordStatus() == MissionRecordStatu.GZYQR.getCode() ||
+                            missionRecord.getMissionRecordStatus() == MissionRecordStatu.SFYQR.getCode() ||
+                            missionRecord.getMissionRecordStatus() == MissionRecordStatu.GYYQRWC.getCode() ||
+                            missionRecord.getMissionRecordStatus() == MissionRecordStatu.DPJ.getCode() ||
+                            missionRecord.getMissionRecordStatus() == MissionRecordStatu.YPJ.getCode() ||
+                            missionRecord.getMissionRecordStatus() == MissionRecordStatu.GZYPJ.getCode() ||
+                            missionRecord.getMissionRecordStatus() == MissionRecordStatu.GYYPJ.getCode() ||
+                            missionRecord.getMissionRecordStatus() == MissionRecordStatu.GZYQRWC.getCode()){
+                            byUuid.setIshideMobile(0);
+                    }
+
                 }
             }
 

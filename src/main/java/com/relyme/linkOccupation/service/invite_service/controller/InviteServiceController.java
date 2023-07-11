@@ -12,6 +12,7 @@ import com.relyme.linkOccupation.service.invite_service.domain.InviteService;
 import com.relyme.linkOccupation.service.invite_service.domain.InviteServiceView;
 import com.relyme.linkOccupation.service.invite_service.dto.InviteServiceDto;
 import com.relyme.linkOccupation.service.invite_service.dto.InviteServiceQueryDto;
+import com.relyme.linkOccupation.service.invite_service.dto.InviteServiceQueryExcelOutDto;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
@@ -22,6 +23,13 @@ import com.relyme.linkOccupation.utils.date.DateUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,7 +44,13 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.FileOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -64,6 +78,8 @@ public class InviteServiceController {
 
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
+
+
 
 
     /**
@@ -154,6 +170,10 @@ public class InviteServiceController {
                         predicates.add(criteriaBuilder.equal(root.get("departmentUuid"), queryEntity.getDepartmentUuid()));
                     }
 
+                    if(StringUtils.isNotEmpty(queryEntity.getPostUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("postUuid"), queryEntity.getPostUuid()));
+                    }
+
                     if(queryEntity.getInviteTime() != null){
                         String StartTime = DateUtil.dateToString(queryEntity.getInviteTime(),DateUtil.MONTG_DATE_FORMAT);
                         Calendar calendar = Calendar.getInstance();
@@ -187,6 +207,203 @@ public class InviteServiceController {
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 导出招聘服务列表信息 excel
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("导出招聘服务列表信息 excel")
+    @JSON(type = InviteService.class  , include="content,totalElements")
+    @JSON(type = InviteService.class)
+    @RequestMapping(value="/exportInviteServiceListExcel",method = RequestMethod.POST,consumes = MediaType.ALL_VALUE)
+    public void exportInviteServiceListExcel(@RequestBody InviteServiceQueryExcelOutDto queryEntity, HttpServletRequest request, HttpServletResponse response) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("用户信息异常");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
+                throw new Exception("请选择服务企业！");
+            }
+
+            EnterpriseInfo enterpriseInfoDaoByUuid = enterpriseInfoDao.findByUuid(queryEntity.getEnterpriseUuid());
+            if(enterpriseInfoDaoByUuid == null){
+                throw new Exception("企业信息异常！");
+            }
+
+            // 第一步，创建一个workbook，对应一个Excel文件
+            XSSFWorkbook workbook = new XSSFWorkbook();
+
+            // 第二步，在webbook中添加一个sheet,对应Excel文件中的sheet
+            XSSFSheet hssfSheet = workbook.createSheet("招聘信息");
+            hssfSheet.setColumnWidth(1, 3600);
+            hssfSheet.setColumnWidth(2, 3600);
+            hssfSheet.setColumnWidth(3, 3600);
+            hssfSheet.setColumnWidth(4, 3600);
+
+            // 第三步，在sheet中添加表头第0行,注意老版本poi对Excel的行数列数有限制short
+
+            XSSFRow row = hssfSheet.createRow(0);
+
+            // 第四步，创建单元格，并设置值表头 设置表头居中
+            CellStyle cellStyle = workbook.createCellStyle();
+            // 水平布局：居中
+            cellStyle.setAlignment(CellStyle.ALIGN_CENTER);
+            cellStyle.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+            cellStyle.setWrapText(true);
+
+            //事件title
+            Cell title = row.createCell(0);
+            title.setCellValue("招聘信息");
+            title.setCellStyle(cellStyle);
+            CellRangeAddress region = new CellRangeAddress(0, 0, 0, 4);
+            hssfSheet.addMergedRegion(region);
+
+            //制表人
+            row = hssfSheet.createRow(1);
+            Cell zbr_title = row.createCell(0);
+            zbr_title.setCellValue("制表人:");
+            zbr_title.setCellStyle(cellStyle);
+
+            Cell zbr_name = row.createCell(1);
+            zbr_name.setCellValue(userAccount.getName());
+            zbr_name.setCellStyle(cellStyle);
+
+            Cell zbr_time_title = row.createCell(2);
+            zbr_time_title.setCellValue("制表时间:");
+            zbr_time_title.setCellStyle(cellStyle);
+
+            Cell zbr_time = row.createCell(3);
+            zbr_time.setCellValue(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()));
+            zbr_time.setCellStyle(cellStyle);
+//            CellRangeAddress region_1 = new CellRangeAddress(1, 1, 3, 5);
+//            hssfSheet.addMergedRegion(region_1);
+
+
+            zbr_time = row.createCell(4);
+            zbr_time.setCellValue("服务企业:");
+            zbr_time.setCellStyle(cellStyle);
+
+            zbr_time = row.createCell(5);
+            zbr_time.setCellValue(enterpriseInfoDaoByUuid.getEnterpriseName());
+            zbr_time.setCellStyle(cellStyle);
+
+
+            //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+            XSSFDrawing patriarch = hssfSheet.createDrawingPatriarch();
+
+            row = hssfSheet.createRow(2);
+
+            String[] titles = new String[]{"序号", "招聘部门","招聘岗位","招聘人数","招聘时间"};
+            Cell hssfCell = null;
+            int celIndex = 0;
+            for (int i = 0; i < titles.length; i++) {
+                //列索引从0开始
+                hssfCell = row.createCell(i);
+                //列名1
+                hssfCell.setCellValue(titles[i]);
+                //列居中显示
+                hssfCell.setCellStyle(cellStyle);
+            }
+
+            //查询默认当天的费用记录
+            Specification<InviteServiceView> specification=new Specification<InviteServiceView>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<InviteServiceView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+//                    if(StringUtils.isNotEmpty(queryEntity.getSearStr())){
+//                        predicates_or.add(criteriaBuilder.like(root.get("enterpriseName"), "%"+queryEntity.getSearStr()+"%"));
+//                        predicates_or.add(criteriaBuilder.like(root.get("address"), "%"+queryEntity.getSearStr()+"%"));
+//                        predicates_or.add(criteriaBuilder.like(root.get("legalPerson"), "%"+queryEntity.getSearStr()+"%"));
+//                    }
+
+                    if(queryEntity.getInviteTime() != null){
+                        String dataxx = DateUtil.dateToString(queryEntity.getInviteTime(),DateUtil.MONTG_DATE_FORMAT);
+                        Date startDate = DateUtil.stringtoDate(dataxx + " 00:00:00", DateUtil.FORMAT_ONE);
+                        Date endDate = DateUtil.stringtoDate(dataxx + " 23:59:59", DateUtil.FORMAT_ONE);
+                        predicates.add(criteriaBuilder.between(root.get("serviceTime"), startDate,endDate));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getEnterpriseUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getDepartmentUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("departmentUuid"), queryEntity.getDepartmentUuid()));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getPostUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("postUuid"), queryEntity.getPostUuid()));
+                    }
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(0, 10000, sort);
+            Page<InviteServiceView> enterpriseInfoPage = inviteServiceViewDao.findAll(specification,pageable);
+
+            List<InviteServiceView> enterpriseInfos = enterpriseInfoPage.getContent();
+
+            InviteServiceView enterpriseInfo = null;
+            CustAccount custAccount = null;
+            FileOutputStream fileOut = null;
+            BufferedImage bufferImg = null;
+            for (int i = 0; i < enterpriseInfos.size(); i++) {
+                enterpriseInfo = enterpriseInfos.get(i);
+                row = hssfSheet.createRow(i + 3);
+                Cell cell = row.createCell(0);
+                cell.setCellValue(i + 1);
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(1);
+
+                cell.setCellValue(enterpriseInfo.getDepartmentName());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(2);
+                cell.setCellValue(enterpriseInfo.getPostName());
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(3);
+                cell.setCellValue(enterpriseInfo.getInviteNums()+"人");
+                cell.setCellStyle(cellStyle);
+
+                cell = row.createCell(4);
+                cell.setCellValue(DateUtil.dateToString(enterpriseInfo.getInviteTime(),DateUtil.LONG_DATE_FORMAT));
+                cell.setCellStyle(cellStyle);
+            }
+
+            ServletOutputStream out = response.getOutputStream();
+            workbook.write(out);
+            out.close();
+
+//            return new ResultCodeNew("0","");
+        }catch(Exception ex){
+            ex.printStackTrace();
+//            return new ResultCode("00",ex.getMessage(),new ArrayList());
         }
     }
 
