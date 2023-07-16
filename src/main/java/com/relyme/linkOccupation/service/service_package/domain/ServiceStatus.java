@@ -91,6 +91,18 @@ public class ServiceStatus extends BaseEntityForMysql {
     @Column(name = "service_use_type", length = 3,columnDefinition="int default 0")
     private int serviceUseType;
 
+    /**
+     * 是否是额外服务 0 不是 1是
+     */
+    @Column(name = "is_ext_service", length = 3,columnDefinition="int default 0")
+    private int isExtService;
+
+    /**
+     * 服务有效期 可以是年或月份，具体为数字，以用户购买的选择单位为准
+     */
+    @Column(name = "service_limit", length = 3,columnDefinition="int default 0")
+    private int serviceLimit;
+
 
     public String getUserAccountUuid() {
         return userAccountUuid;
@@ -178,5 +190,21 @@ public class ServiceStatus extends BaseEntityForMysql {
 
     public void setServiceUseType(int serviceUseType) {
         this.serviceUseType = serviceUseType;
+    }
+
+    public int getIsExtService() {
+        return isExtService;
+    }
+
+    public void setIsExtService(int isExtService) {
+        this.isExtService = isExtService;
+    }
+
+    public int getServiceLimit() {
+        return serviceLimit;
+    }
+
+    public void setServiceLimit(int serviceLimit) {
+        this.serviceLimit = serviceLimit;
     }
 }

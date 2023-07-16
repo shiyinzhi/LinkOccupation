@@ -87,6 +87,19 @@ public class ServiceOrders extends BaseEntityForMysql {
     @Column(name = "buy_money",length = 18,scale = 2)
     private BigDecimal buyMoney;
 
+
+    /**
+     * 后台折扣
+     */
+    @Column(name = "background_discounts",length = 18,scale = 2)
+    private BigDecimal backgroundDiscounts;
+
+    /**
+     * 实际购买金额
+     */
+    @Column(name = "true_buy_money",length = 18,scale = 2)
+    private BigDecimal trueBuyMoney;
+
     /**
      * 生效时间
      */
@@ -277,5 +290,21 @@ public class ServiceOrders extends BaseEntityForMysql {
 
     public void setIsExpire(int isExpire) {
         this.isExpire = isExpire;
+    }
+
+    public BigDecimal getBackgroundDiscounts() {
+        return backgroundDiscounts;
+    }
+
+    public void setBackgroundDiscounts(BigDecimal backgroundDiscounts) {
+        this.backgroundDiscounts = backgroundDiscounts;
+    }
+
+    public BigDecimal getTrueBuyMoney() {
+        return trueBuyMoney;
+    }
+
+    public void setTrueBuyMoney(BigDecimal trueBuyMoney) {
+        this.trueBuyMoney = trueBuyMoney;
     }
 }

@@ -145,11 +145,6 @@ public class ServiceOrdersAPIController {
                 invoiceDao.save(invoice);
             }
 
-            //更新企业订单uuid、套餐uuid
-            enterpriseInfo.setServiceOrdersUuid(serviceOrders.getUuid());
-            enterpriseInfo.setServicePackageUuid(byUuid.getUuid());
-            enterpriseInfoDao.save(enterpriseInfo);
-
             return new ResultCodeNew("0","",serviceOrders);
         }catch(Exception ex){
             ex.printStackTrace();
@@ -234,6 +229,7 @@ public class ServiceOrdersAPIController {
             new BeanCopyUtil().copyProperties(serviceOrdersBuyPriceDto,queryEntity,true,new String[]{"sn"});
             ServiceOrders caculateServiceOrderPrice = getCaculateServiceOrderPriceWithOutSpecUuid(serviceOrdersBuyPriceDto);
             serviceOrders.setBuyMoney(caculateServiceOrderPrice.getBuyMoney());
+            serviceOrders.setTrueBuyMoney(caculateServiceOrderPrice.getBuyMoney());
             serviceOrdersDao.save(serviceOrders);
 
             //生成发票信息

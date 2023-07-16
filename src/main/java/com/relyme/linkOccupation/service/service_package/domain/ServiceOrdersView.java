@@ -154,6 +154,18 @@ public class ServiceOrdersView extends BaseEntityForMysql {
     private BigDecimal buyMoney;
 
     /**
+     * 后台折扣
+     */
+    @Column(name = "background_discounts",length = 18,scale = 2)
+    private BigDecimal backgroundDiscounts;
+
+    /**
+     * 实际购买金额
+     */
+    @Column(name = "true_buy_money",length = 18,scale = 2)
+    private BigDecimal trueBuyMoney;
+
+    /**
      * 生效时间
      */
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -182,6 +194,14 @@ public class ServiceOrdersView extends BaseEntityForMysql {
      */
     @Column(name = "is_buy_offline", length = 3,columnDefinition="tinyint default 0")
     private int isBuyOffline;
+
+    /**
+     * 是否已到期  0 否 1是
+     */
+    @Column(name = "is_expire", length = 3,columnDefinition="tinyint default 0")
+    private int isExpire;
+
+
 
     /**
      * 企业规模 从订单价格来
@@ -403,5 +423,29 @@ public class ServiceOrdersView extends BaseEntityForMysql {
 
     public void setFreeMonthes(int freeMonthes) {
         this.freeMonthes = freeMonthes;
+    }
+
+    public BigDecimal getBackgroundDiscounts() {
+        return backgroundDiscounts;
+    }
+
+    public void setBackgroundDiscounts(BigDecimal backgroundDiscounts) {
+        this.backgroundDiscounts = backgroundDiscounts;
+    }
+
+    public BigDecimal getTrueBuyMoney() {
+        return trueBuyMoney;
+    }
+
+    public void setTrueBuyMoney(BigDecimal trueBuyMoney) {
+        this.trueBuyMoney = trueBuyMoney;
+    }
+
+    public int getIsExpire() {
+        return isExpire;
+    }
+
+    public void setIsExpire(int isExpire) {
+        this.isExpire = isExpire;
     }
 }

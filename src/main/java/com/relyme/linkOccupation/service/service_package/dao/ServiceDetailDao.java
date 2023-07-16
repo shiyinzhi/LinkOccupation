@@ -23,4 +23,11 @@ public interface ServiceDetailDao extends ExtJpaRepository<ServiceDetail, String
      */
     List<ServiceDetail> findByServicePackageUuid(String servicePackageUuid);
 
+    /**
+     * 通过uuid集合查询服务内容
+     * @param uuids
+     * @return
+     */
+    List<ServiceDetail> findByUuidIn(List<String> uuids);
+
 }

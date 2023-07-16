@@ -7,13 +7,13 @@ import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfoView;
+import com.relyme.linkOccupation.service.service_package.dao.ServiceDetailDao;
 import com.relyme.linkOccupation.service.service_package.dao.ServiceOrdersDao;
 import com.relyme.linkOccupation.service.service_package.dao.ServiceStatusDao;
+import com.relyme.linkOccupation.service.service_package.domain.ServiceDetail;
 import com.relyme.linkOccupation.service.service_package.domain.ServiceOrders;
 import com.relyme.linkOccupation.service.service_package.domain.ServiceStatus;
-import com.relyme.linkOccupation.service.service_package.dto.ServiceStatusDto;
-import com.relyme.linkOccupation.service.service_package.dto.ServiceStatusExcelDto;
-import com.relyme.linkOccupation.service.service_package.dto.ServiceStatusQueryDto;
+import com.relyme.linkOccupation.service.service_package.dto.*;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
@@ -77,6 +77,9 @@ public class ServiceStatusController {
 
     @Autowired
     ServiceOrdersDao serviceOrdersDao;
+
+    @Autowired
+    ServiceDetailDao serviceDetailDao;
 
     /**
      * 条件查询信息
@@ -151,6 +154,75 @@ public class ServiceStatusController {
 
 
             return new ResultCodeNew("0","",serviceStatusPage,map);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 条件查询信息 额外服务
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("条件查询信息 额外服务")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceStatus.class,notinclude = "sn,addTime,updateTime,active,page,pageSize,querySort,orderColumn,limit")
+    @RequestMapping(value="/findByConditionExtAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object findByConditionExtAPI(@Validated @RequestBody ServiceStatusExtQueryDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            //查询默认当天的费用记录
+            Specification<ServiceStatus> specification=new Specification<ServiceStatus>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Predicate toPredicate(Root<ServiceStatus> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                    List<Predicate> predicates = new ArrayList<>();
+                    List<Predicate> predicates_or = new ArrayList<>();
+                    Predicate condition_tData = null;
+
+                    if(queryEntity.getUpdateDate() != null){
+//                        String[] strings = queryEntity.getSocialDate().split("-");
+//                        String lastDayOfMonth = DateUtil.getLastDayOfMonth(Integer.parseInt(strings[0]),Integer.parseInt(strings[1]));
+//                        Date startDate = DateUtil.stringtoDate(queryEntity.getSocialDate() + "-01 00:00:00", DateUtil.FORMAT_ONE);
+//                        Date endDate = DateUtil.stringtoDate(lastDayOfMonth + " 23:59:59", DateUtil.FORMAT_ONE);
+                        predicates.add(criteriaBuilder.equal(root.get("serviceTime"), queryEntity.getUpdateDate()));
+                    }
+
+                    if(StringUtils.isNotEmpty(queryEntity.getEnterpriseUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
+                    }
+
+                    condition_tData = criteriaBuilder.equal(root.get("isExtService"), 1);
+                    predicates.add(condition_tData);
+
+                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+                    predicates.add(condition_tData);
+
+
+                    if(predicates_or.size() > 0){
+                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+                    }
+
+                    Predicate[] predicates1 = new Predicate[predicates.size()];
+                    query.where(predicates.toArray(predicates1));
+                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+                    return null;
+                }
+            };
+            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+            Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
+            Page<ServiceStatus> serviceStatusPage = serviceStatusDao.findAll(specification,pageable);
+
+            return new ResultCodeNew("0","",serviceStatusPage);
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());
@@ -511,5 +583,149 @@ public class ServiceStatusController {
     }
 
 
+
+    /**
+     * 更新额外服务
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("更新额外服务")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceStatus.class,include = "uuid")
+    @RequestMapping(value="/updateExtService",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object updateExtService(@Validated @RequestBody ServiceStatusExtDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
+                throw new Exception("企业uuid 为空！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getServiceContent())){
+                throw new Exception("服务名称为空！");
+            }
+
+            ServiceStatus byUuid = null;
+            if(StringUtils.isNotEmpty(queryEntity.getUuid())){
+                byUuid = serviceStatusDao.findByUuid(queryEntity.getUuid());
+                if(byUuid != null){
+                    new BeanCopyUtil().copyProperties(byUuid,queryEntity,true,new String[]{"sn"});
+                }
+            }else{
+                byUuid = new ServiceStatus();
+                new BeanCopyUtil().copyProperties(byUuid,queryEntity,true,new String[]{"sn","uuid"});
+            }
+            if(queryEntity.getServiceCount() == 0){
+                byUuid.setServiceUseType(2);
+            }else if(queryEntity.getServiceCount() > 0){
+                byUuid.setServiceUseType(1);
+            }
+            byUuid.setStatusProcess(new BigDecimal(0));
+            byUuid.setIsExtService(1);
+            byUuid.setUserAccountUuid(userAccount.getUuid());
+            byUuid.setServiceTime(DateUtil.stringtoDate(DateUtil.dateToString(new Date(),DateUtil.MONTG_DATE_FORMAT),DateUtil.MONTG_DATE_FORMAT));
+            serviceStatusDao.save(byUuid);
+
+            return new ResultCodeNew("0","",byUuid);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 更新额外服务 从套餐选择
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("更新额外服务 从套餐选择")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceStatus.class,include = "uuid")
+    @RequestMapping(value="/updateExtServiceSelected",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object updateExtServiceSelected(@Validated @RequestBody ServiceStatusExtSelectedDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getEnterpriseUuid())){
+                throw new Exception("企业uuid 不能为空！");
+            }
+
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(queryEntity.getEnterpriseUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+
+            if(queryEntity.getServiceDetailUuids() == null || queryEntity.getServiceDetailUuids().size() == 0){
+                throw new Exception("请选择服务内容！");
+            }
+
+            List<ServiceDetail> byUuidIn = serviceDetailDao.findByUuidIn(queryEntity.getServiceDetailUuids());
+            List<ServiceStatus> serviceStatusList = new ArrayList<>();
+            for (ServiceDetail serviceDetail : byUuidIn) {
+                ServiceStatus serviceStatus = new ServiceStatus();
+                new BeanCopyUtil().copyProperties(serviceStatus,serviceDetail,true,new String[]{"sn","uuid"});
+                serviceStatus.setServiceTime(DateUtil.stringtoDate(DateUtil.dateToString(new Date(),DateUtil.MONTG_DATE_FORMAT),DateUtil.MONTG_DATE_FORMAT));
+                serviceStatus.setUserAccountUuid(userAccount.getUuid());
+                serviceStatus.setEnterpriseUuid(enterpriseInfo.getUuid());
+                serviceStatus.setStatusProcess(new BigDecimal(0));
+                serviceStatus.setIsExtService(1);
+                serviceStatus.setAddTime(new Date());
+                serviceStatus.setUpdateTime(new Date());
+                serviceStatusList.add(serviceStatus);
+            }
+
+            serviceStatusDao.save(serviceStatusList);
+
+            return new ResultCodeNew("0","更新成功！");
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 删除额外服务
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("删除额外服务")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceStatus.class,include = "uuid")
+    @RequestMapping(value="/delExtService",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object delExtService(@Validated @RequestBody ServiceStatusExtDelDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getUuid())){
+                throw new Exception("额外服务uuid 为空！");
+            }
+
+            ServiceStatus byUuid = serviceStatusDao.findByUuid(queryEntity.getUuid());;
+            if(byUuid == null){
+                throw new Exception("额外服务信息异常！");
+            }
+            byUuid.setActive(0);
+            serviceStatusDao.save(byUuid);
+
+            return new ResultCodeNew("0","删除成功！",byUuid);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
 
 }

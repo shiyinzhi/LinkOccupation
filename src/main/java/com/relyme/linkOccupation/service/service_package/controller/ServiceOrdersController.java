@@ -164,6 +164,8 @@ public class ServiceOrdersController {
                     serviceStatus.setStatusProcess(new BigDecimal(0));
                     serviceStatus.setServiceCount(serviceDetail.getServiceCount());
                     serviceStatus.setServiceUseType(serviceDetail.getServiceUseType());
+                    serviceStatus.setServiceLimit(serviceDetail.getServiceLimit());
+                    serviceStatus.setRemark(serviceDetail.getRemark());
                     serviceStatusList.add(serviceStatus);
                 }
 
@@ -178,6 +180,12 @@ public class ServiceOrdersController {
                         wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您已购买套餐："+servicePackage.getPackageName(),"套餐购买","套餐购买成功");
                     }
                 }
+
+                //更新企业订单uuid、套餐uuid
+                enterpriseInfo.setServiceOrdersUuid(serviceOrders.getUuid());
+                enterpriseInfo.setServicePackageUuid(servicePackage.getUuid());
+                enterpriseInfo.setIsVip(1);
+                enterpriseInfoDao.save(enterpriseInfo);
             }
 
             return new ResultCodeNew("0","",serviceOrders);
@@ -496,6 +504,8 @@ public class ServiceOrdersController {
                 serviceStatus.setStatusProcess(new BigDecimal(0));
                 serviceStatus.setServiceCount(serviceDetail.getServiceCount());
                 serviceStatus.setServiceUseType(serviceDetail.getServiceUseType());
+                serviceStatus.setServiceLimit(serviceDetail.getServiceLimit());
+                serviceStatus.setRemark(serviceDetail.getRemark());
                 serviceStatusList.add(serviceStatus);
             }
 
@@ -547,6 +557,12 @@ public class ServiceOrdersController {
     @RequestMapping(value="/checkBuyerAccountStatus",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object checkBuyerAccountStatus(@Validated @RequestBody BuyerAccountStatusDto queryEntity, HttpServletRequest request) {
         try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
             if(StringUtils.isEmpty(queryEntity.getMobile())){
                 throw new Exception("购买者手机号不能为空！");
             }
@@ -581,6 +597,12 @@ public class ServiceOrdersController {
     @RequestMapping(value="/buyServicePackageAdmin",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object buyServicePackageAdmin(@Validated @RequestBody ServiceOrdersDto queryEntity, HttpServletRequest request) {
         try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
             return serviceOrdersAPIController.buyServicePackage(queryEntity, request);
         }catch(Exception ex){
             ex.printStackTrace();
@@ -588,5 +610,86 @@ public class ServiceOrdersController {
         }
     }
 
+    /**
+     * 计算购买价格 后台调价
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("计算购买价格 后台调价")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrders.class,include = "trueBuyMoney")
+    @RequestMapping(value="/buyPricesBackGround",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object buyPricesBackGround(@Validated @RequestBody ServiceOrdersBuyPriceBackGroundDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getUuid())){
+                throw new Exception("服务订单uuid 不能为空！");
+            }
+
+            ServiceOrders serviceOrders = serviceOrdersDao.findByUuid(queryEntity.getUuid());
+            if(serviceOrders == null){
+                throw new Exception("服务订单信息异常！");
+            }
+
+            if(serviceOrders.getIsBuyOffline() == 1){
+                throw new Exception("已经购买的订单无法改价！");
+            }
+
+            if(queryEntity.getBackgroundDiscounts() != null && queryEntity.getBackgroundDiscounts().compareTo(new BigDecimal(0)) != 0){
+                BigDecimal trueBuyMoney = serviceOrders.getBuyMoney().multiply(queryEntity.getBackgroundDiscounts()).setScale(2,BigDecimal.ROUND_HALF_UP);
+                serviceOrders.setTrueBuyMoney(trueBuyMoney);
+            }
+            return new ResultCodeNew("0","",serviceOrders);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 后台调价保存
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("后台调价保存")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrders.class,include = "uuid")
+    @RequestMapping(value="/shureBuyPricesBackGround",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object shureBuyPricesBackGround(@Validated @RequestBody ServiceOrdersBuyPriceBackGroundDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getUuid())){
+                throw new Exception("服务订单uuid 不能为空！");
+            }
+
+            ServiceOrders serviceOrders = serviceOrdersDao.findByUuid(queryEntity.getUuid());
+            if(serviceOrders == null){
+                throw new Exception("服务订单信息异常！");
+            }
+
+            if(queryEntity.getBackgroundDiscounts() != null && queryEntity.getBackgroundDiscounts().compareTo(new BigDecimal(0)) != 0){
+                BigDecimal trueBuyMoney = serviceOrders.getBuyMoney().multiply(queryEntity.getBackgroundDiscounts()).setScale(2,BigDecimal.ROUND_HALF_UP);
+                serviceOrders.setTrueBuyMoney(trueBuyMoney);
+                serviceOrders.setBackgroundDiscounts(queryEntity.getBackgroundDiscounts());
+            }
+            serviceOrdersDao.save(serviceOrders);
+
+            return new ResultCodeNew("0","",serviceOrders);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
 
 }
