@@ -237,4 +237,29 @@ public interface MissionRecordDao extends ExtJpaRepository<MissionRecord, String
      */
     @Query(value = "SELECT count(*) FROM mission_record inner JOIN employee ON mission_record.employee_uuid = employee.uuid inner JOIN cust_account ON employee.cust_account_uuid = cust_account.uuid WHERE mission_record.active = 1 and mission_record.mission_record_status =4 and cust_account.uuid = ?1",nativeQuery = true)
     int getTotalNotShure(String custAccountUuid);
+
+
+    /**
+     * 查询企业简历投放总次数
+     * @param enterpriseUuid
+     * @return
+     */
+    @Query(value = "SELECT count(*) FROM mission_record INNER JOIN mission ON mission_record.mission_uuid = mission.uuid where mission_record.active = 1 and mission.enterprise_uuid=?1",nativeQuery = true)
+    int getEntTotalPush(String enterpriseUuid);
+
+    /**
+     * 查询企业简历投放录用次数
+     * @param enterpriseUuid
+     * @return
+     */
+    @Query(value = "SELECT count(*) FROM mission_record INNER JOIN mission ON mission_record.mission_uuid = mission.uuid where mission_record.active = 1 and mission_record.mission_record_status in (5,6,7,8,10,11,12) and mission.enterprise_uuid=?1",nativeQuery = true)
+    int getEntTotalShure(String enterpriseUuid);
+
+    /**
+     * 查询企业简历投放未录用次数
+     * @param enterpriseUuid
+     * @return
+     */
+    @Query(value = "SELECT count(*) FROM mission_record INNER JOIN mission ON mission_record.mission_uuid = mission.uuid where mission_record.active = 1 and mission_record.mission_record_status in (0,1,2,3,4,9) and mission.enterprise_uuid=?1",nativeQuery = true)
+    int getEntTotalNotShure(String enterpriseUuid);
 }

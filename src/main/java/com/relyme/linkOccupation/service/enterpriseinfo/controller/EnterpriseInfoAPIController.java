@@ -6,6 +6,7 @@ import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoQueryCustUuidDto;
+import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoQueryUuidDto;
 import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoQueryVIPDto;
 import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoUpdateDto;
 import com.relyme.linkOccupation.utils.JSON;
@@ -196,6 +197,33 @@ public class EnterpriseInfoAPIController {
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 检查是否购买了套餐服务
+     * @return
+     */
+    @ApiOperation("检查是否购买了套餐服务")
+    @JSON(type = EnterpriseInfo.class  , include="isVip")
+    @RequestMapping(value="/checkHasBuyServicePackage",method = RequestMethod.POST,produces={"application/json;charset=UTF-8","text/html;charset=UTF-8"})
+    public Object checkHasBuyServicePackage(@Validated @RequestBody EnterpriseInfoQueryUuidDto entity, HttpServletRequest request) {
+        try{
+
+            if(StringUtils.isEmpty(entity.getUuid())){
+                throw new Exception("企业uuid 为空！");
+            }
+
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(entity.getUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+
+            return new ResultCodeNew("0","",enterpriseInfo);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCodeNew("00",ex.getMessage());
         }
     }
 

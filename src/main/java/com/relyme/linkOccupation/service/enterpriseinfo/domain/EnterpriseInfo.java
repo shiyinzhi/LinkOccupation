@@ -128,6 +128,15 @@ public class EnterpriseInfo extends BaseEntityForMysql {
     @Transient
     private String businessLicensePath;
 
+    @Transient
+    private int totalPush = 0;
+
+    @Transient
+    private int totalShure = 0;
+
+    @Transient
+    private int totalNotShure = 0;
+
 
     public String getEnterpriseName() {
         return enterpriseName;
@@ -271,5 +280,29 @@ public class EnterpriseInfo extends BaseEntityForMysql {
 
     public void setServicePackageUuid(String servicePackageUuid) {
         this.servicePackageUuid = servicePackageUuid;
+    }
+
+    public int getTotalPush() {
+        return totalPush;
+    }
+
+    public void setTotalPush(int totalPush) {
+        this.totalPush = totalPush;
+    }
+
+    public int getTotalShure() {
+        return totalShure;
+    }
+
+    public void setTotalShure(int totalShure) {
+        this.totalShure = totalShure;
+    }
+
+    public int getTotalNotShure() {
+        return totalNotShure;
+    }
+
+    public void setTotalNotShure(int totalNotShure) {
+        this.totalNotShure = totalNotShure;
     }
 }
