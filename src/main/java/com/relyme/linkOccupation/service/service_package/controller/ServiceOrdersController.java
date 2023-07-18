@@ -177,7 +177,7 @@ public class ServiceOrdersController {
                     CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
                     if(byMobile != null){
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您已购买套餐："+servicePackage.getPackageName(),"套餐购买","套餐购买成功");
+                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您已购买套餐："+servicePackage.getPackageName(),"套餐购买","您已成功购买套餐："+servicePackage.getPackageName());
                     }
                 }
 

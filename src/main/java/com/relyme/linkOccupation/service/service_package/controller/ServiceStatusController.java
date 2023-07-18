@@ -252,6 +252,19 @@ public class ServiceStatusController {
                 throw new Exception("服务状态信息异常！");
             }
 
+            //次数
+            if(byUuid.getServiceUseType() == 1){
+                if(byUuid.getServiceCount() <= queryEntity.getServiceCount() ){
+                    throw new Exception("请填入正确剩余服务次数！");
+                }
+            }
+            //进度
+            else if(byUuid.getServiceUseType() == 2){
+                if(byUuid.getStatusProcess().compareTo(queryEntity.getStatusProcess()) >= 0){
+                    throw new Exception("请填入正确服务进度！");
+                }
+            }
+
             byUuid.setUserAccountUuid(userAccount.getUuid());
 
             //按次数消费
@@ -343,6 +356,20 @@ public class ServiceStatusController {
                 for (ServiceStatusDto serviceStatusDto : queryEntity) {
                     //服务已完成
                     if(serviceStatus.getUuid().equals(serviceStatusDto.getUuid())){
+
+                        //次数
+                        if(serviceStatus.getServiceUseType() == 1){
+                            if(serviceStatus.getServiceCount() <= serviceStatusDto.getServiceCount() ){
+                                throw new Exception("请填入正确剩余服务次数！>>"+serviceStatus.getServiceContent());
+                            }
+                        }
+                        //进度
+                        else if(serviceStatus.getServiceUseType() == 2){
+                            if(serviceStatus.getStatusProcess().compareTo(serviceStatusDto.getStatusProcess()) >= 0){
+                                throw new Exception("请填入正确服务进度！>>"+serviceStatus.getServiceContent());
+                            }
+                        }
+
                         //按次数使用
                         if(serviceStatus.getServiceUseType() == 1){
                             if(serviceStatusDto.getServiceCount()==0){

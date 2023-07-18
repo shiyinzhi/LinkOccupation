@@ -1,6 +1,9 @@
 package com.relyme.linkOccupation.service.complaint.controller;
 
 
+import com.relyme.linkOccupation.service.admin_msg.dao.ComplaintExecutiveMsgDao;
+import com.relyme.linkOccupation.service.admin_msg.domain.ComplaintExecutiveMsg;
+import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
 import com.relyme.linkOccupation.service.complaint.dao.ComplaintDao;
 import com.relyme.linkOccupation.service.complaint.dao.ComplaintViewDao;
 import com.relyme.linkOccupation.service.complaint.domain.Complaint;
@@ -10,6 +13,7 @@ import com.relyme.linkOccupation.service.complaint.dto.ComplaintDto;
 import com.relyme.linkOccupation.service.complaint.dto.ComplaintQueryUuidDto;
 import com.relyme.linkOccupation.service.complaint.dto.ComplaintSatisfiedUuidDto;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
+import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.utils.JSON;
 import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
@@ -55,6 +59,12 @@ public class ComplaintAPIController {
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
 
+    @Autowired
+    ComplaintExecutiveMsgDao complaintExecutiveMsgDao;
+
+    @Autowired
+    WechatTemplateMsg wechatTemplateMsg;
+
 
     /**
      * 提交投诉建议
@@ -80,9 +90,21 @@ public class ComplaintAPIController {
                 throw new Exception("投诉或建议内容不能为空！");
             }
 
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(queryEntity.getEnterpriseUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+
             Complaint complaint = new Complaint();
             new BeanCopyUtil().copyProperties(complaint,queryEntity,true,new String[]{"sn","uuid"});
             complaintDao.save(complaint);
+
+            //发送消息给管理人员
+            List<ComplaintExecutiveMsg> all = complaintExecutiveMsgDao.findAll();
+            for (ComplaintExecutiveMsg adminMsg : all) {
+                //发送消息
+                wechatTemplateMsg.SendMsg(adminMsg.getCustAccountUuid(),"/pages/index/company-index",null,"雇主发布了一条招工信息，内容如下：","投诉建议",enterpriseInfo.getEnterpriseName()+"提交了投诉建议，请即时处理");
+            }
 
             return new ResultCodeNew("0","",complaint);
         }catch(Exception ex){

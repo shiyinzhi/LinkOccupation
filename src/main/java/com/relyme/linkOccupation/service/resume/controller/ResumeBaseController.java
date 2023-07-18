@@ -6,8 +6,9 @@ import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoQueryDto;
 import com.relyme.linkOccupation.service.mission.dao.MissionRecordDao;
 import com.relyme.linkOccupation.service.resume.dao.ResumeBaseDao;
+import com.relyme.linkOccupation.service.resume.dao.ResumeBaseEmployeeDao;
 import com.relyme.linkOccupation.service.resume.dao.ResumeBaseViewDao;
-import com.relyme.linkOccupation.service.resume.domain.ResumeBase;
+import com.relyme.linkOccupation.service.resume.domain.ResumeBaseEmployee;
 import com.relyme.linkOccupation.service.resume.dto.ResumeBaseQueryDto;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
@@ -58,6 +59,9 @@ public class ResumeBaseController {
 
     @Autowired
     EnterpriseInfoDao enterpriseInfoDao;
+
+    @Autowired
+    ResumeBaseEmployeeDao resumeBaseEmployeeDao;
 
 //    /**
 //     * 条件查询信息
@@ -124,7 +128,7 @@ public class ResumeBaseController {
      */
     @ApiOperation("条件查询信息")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = ResumeBase.class,notinclude = "sn,updateTime,active,page,pageSize,querySort,orderColumn,limit")
+    @JSON(type = ResumeBaseEmployee.class,notinclude = "sn,updateTime,active,page,pageSize,querySort,orderColumn,limit")
     @RequestMapping(value="/findByConditionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByConditionAPI(@Validated @RequestBody ResumeBaseQueryDto queryEntity, HttpServletRequest request) {
         try{
@@ -135,11 +139,11 @@ public class ResumeBaseController {
             }
 
             //查询默认当天的费用记录
-            Specification<ResumeBase> specification=new Specification<ResumeBase>() {
+            Specification<ResumeBaseEmployee> specification=new Specification<ResumeBaseEmployee>() {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public Predicate toPredicate(Root<ResumeBase> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                public Predicate toPredicate(Root<ResumeBaseEmployee> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                     List<Predicate> predicates = new ArrayList<>();
                     List<Predicate> predicates_or = new ArrayList<>();
                     Predicate condition_tData = null;
@@ -166,8 +170,8 @@ public class ResumeBaseController {
             };
             Sort sort = new Sort(Sort.Direction.DESC, "addTime");
             Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
-            Page<ResumeBase> resumeBaseViewPage = resumeBaseDao.findAll(specification,pageable);
-            List<ResumeBase> content = resumeBaseViewPage.getContent();
+            Page<ResumeBaseEmployee> resumeBaseViewPage = resumeBaseEmployeeDao.findAll(specification,pageable);
+            List<ResumeBaseEmployee> content = resumeBaseViewPage.getContent();
             content.forEach(resumeBase -> {
                 int totalPush = missionRecordDao.getTotalPush(resumeBase.getCustAccountUuid());
                 int totalShure = missionRecordDao.getTotalShure(resumeBase.getCustAccountUuid());
@@ -175,6 +179,9 @@ public class ResumeBaseController {
                 resumeBase.setTotalPush(totalPush);
                 resumeBase.setTotalShure(totalShure);
                 resumeBase.setTotalNotShure(totalNotShure);
+                if(StringUtils.isEmpty(resumeBase.getResumeName())){
+                    resumeBase.setName(resumeBase.getEmployeeName());
+                }
             });
 
             return new ResultCodeNew("0","",resumeBaseViewPage);

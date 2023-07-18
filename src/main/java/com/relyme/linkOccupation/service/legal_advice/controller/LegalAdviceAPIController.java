@@ -1,7 +1,11 @@
 package com.relyme.linkOccupation.service.legal_advice.controller;
 
 
+import com.relyme.linkOccupation.service.admin_msg.dao.LegalExecutiveMsgDao;
+import com.relyme.linkOccupation.service.admin_msg.domain.LegalExecutiveMsg;
+import com.relyme.linkOccupation.service.common.wechatmsg.WechatTemplateMsg;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
+import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.legal_advice.dao.LegalAdviceDao;
 import com.relyme.linkOccupation.service.legal_advice.dao.LegalAdviceViewDao;
 import com.relyme.linkOccupation.service.legal_advice.domain.LegalAdvice;
@@ -56,6 +60,13 @@ public class LegalAdviceAPIController {
     EnterpriseInfoDao enterpriseInfoDao;
 
 
+    @Autowired
+    WechatTemplateMsg wechatTemplateMsg;
+
+    @Autowired
+    LegalExecutiveMsgDao legalExecutiveMsgDao;
+
+
     /**
      * 提交法律咨询
      * @param queryEntity
@@ -80,9 +91,22 @@ public class LegalAdviceAPIController {
                 throw new Exception("法律咨询内容不能为空！");
             }
 
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(queryEntity.getEnterpriseUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+
             LegalAdvice legalAdvice = new LegalAdvice();
             new BeanCopyUtil().copyProperties(legalAdvice,queryEntity,true,new String[]{"sn","uuid"});
             legalAdviceDao.save(legalAdvice);
+
+
+            //发送消息给管理人员
+            List<LegalExecutiveMsg> all = legalExecutiveMsgDao.findAll();
+            for (LegalExecutiveMsg adminMsg : all) {
+                //发送消息
+                wechatTemplateMsg.SendMsg(adminMsg.getCustAccountUuid(),"/pages/index/company-index",null,"雇主发布了一条招工信息，内容如下：","法律咨询",enterpriseInfo.getEnterpriseName()+"提交了法律咨询，请即时处理");
+            }
 
             return new ResultCodeNew("0","",legalAdvice);
         }catch(Exception ex){

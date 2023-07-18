@@ -10,10 +10,7 @@ import com.relyme.linkOccupation.utils.bean.ResultCodeNew;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -92,8 +89,8 @@ public class RegionCodeAPIController {
                     return null;
                 }
             };
-//            Sort sort = new Sort(Sort.Direction.ASC, "cityCode");
-            Pageable pageable = new PageRequest(regionCodeListsDto.getPage()-1, regionCodeListsDto.getPageSize());
+            Sort sort = new Sort(Sort.Direction.ASC, "cityCode");
+            Pageable pageable = new PageRequest(regionCodeListsDto.getPage()-1, regionCodeListsDto.getPageSize(),sort);
             Page<RegionCode> regionCodePage = regionCodeDao.findAll(specification,pageable);
 
 

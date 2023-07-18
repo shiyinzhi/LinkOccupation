@@ -155,9 +155,9 @@ public class InvoiceController {
                 throw new Exception("请先登录！");
             }
 
-            if(StringUtils.isEmpty(queryEntity.getInvoiceFileName())){
-                throw new Exception("发票图片名称不能为空！");
-            }
+//            if(StringUtils.isEmpty(queryEntity.getInvoiceFileName())){
+//                throw new Exception("发票图片名称不能为空！");
+//            }
 
             Invoice byUuid = invoiceDao.findByUuid(queryEntity.getUuid());
             if(byUuid == null){
