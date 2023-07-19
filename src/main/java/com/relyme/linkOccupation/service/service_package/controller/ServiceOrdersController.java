@@ -293,6 +293,14 @@ public class ServiceOrdersController {
                 throw new Exception("已购服务订单信息异常！");
             }
 
+//            if(queryEntity.getServicePackageUuid().equals(queryEntity.getNewServicePackageUuid())){
+//                throw new Exception("企业已购买相同的套餐不能进行升级！");
+//            }
+
+            if(hasBuyOrder.getEndTime() == null || hasBuyOrder.getStartTime() == null){
+                throw new Exception("请先处理订单，再进行套餐升级！");
+            }
+
             long dayDiff = DateUtil.dayDiff(new Date(), hasBuyOrder.getEndTime());
             if(dayDiff < 0){
                 hasBuyOrder.setActive(0);
@@ -350,8 +358,8 @@ public class ServiceOrdersController {
                     List<Predicate> predicates = new ArrayList<>();
                     List<Predicate> predicates_or = new ArrayList<>();
                     Predicate condition_tData = null;
-                    if(StringUtils.isNotEmpty(queryEntity.getServicePackageUuid())){
-                        predicates.add(criteriaBuilder.equal(root.get("servicePackageUuid"), queryEntity.getServicePackageUuid()));
+                    if(StringUtils.isNotEmpty(queryEntity.getNewServicePackageUuid())){
+                        predicates.add(criteriaBuilder.equal(root.get("servicePackageUuid"), queryEntity.getNewServicePackageUuid()));
                     }
 
                     //多少人以上
@@ -463,6 +471,11 @@ public class ServiceOrdersController {
                 calendar.add(Calendar.YEAR,serviceOrders.getBuyNum());
                 calendar.add(Calendar.MONTH,serviceSpecialOffer.getFreeMonthes());
                 serviceOrders.setEndTime(calendar.getTime());
+            }else if(queryEntity.getBuyType() == 2){
+                Calendar calendar = Calendar.getInstance();
+                serviceOrders.setStartTime(hasBuyOrder.getStartTime());
+                calendar.add(Calendar.YEAR,serviceOrders.getBuyNum());
+                serviceOrders.setEndTime(calendar.getTime());
             }
             serviceOrders.setServiceOrderUuidBefore(hasBuyOrder.getUuid());
             serviceOrders.setUserAccountUuid(userAccount.getUuid());
@@ -472,7 +485,16 @@ public class ServiceOrdersController {
             if(serviceSpecialOffer != null){
                 serviceOrders.setServiceSpecialOfferUuid(serviceSpecialOffer.getUuid());
             }
+
+            serviceOrders.setIsInvoice(hasBuyOrder.getIsInvoice());
+            serviceOrders.setIsBuyOffline(1);
+            serviceOrders.setPayTime(new Date());
+            serviceOrders.setTrueBuyMoney(serviceOrders.getBuyMoney());
             serviceOrdersDao.save(serviceOrders);
+
+            //禁用原来的订单
+            hasBuyOrder.setActive(0);
+            serviceOrdersDao.save(hasBuyOrder);
 
             //生成发票信息
             if(hasBuyOrder.getIsInvoice() == 1){
@@ -514,13 +536,12 @@ public class ServiceOrdersController {
                     //如果服务内容一样更新进度或服务次数数据
                     if(serviceStatus.getServiceContent().equals(hasBuyServiceStatus.getServiceContent())){
                         //更新服务进度
-                        if(hasBuyServiceStatus.getStatusProcess().compareTo(new BigDecimal(0)) > 0
-                                && hasBuyServiceStatus.getServiceCount()==0){
+                        if(hasBuyServiceStatus.getServiceUseType()==ServiceUseTypeStatu.AJDSY.getCode()
+                                && hasBuyServiceStatus.getStatusProcess().compareTo(new BigDecimal(0)) > 0){
                             serviceStatus.setStatusProcess(hasBuyServiceStatus.getStatusProcess());
                         }
                         //更新服务次数
-                        else if(hasBuyServiceStatus.getStatusProcess().compareTo(new BigDecimal(0)) == 0
-                                && hasBuyServiceStatus.getServiceCount() >0){
+                        else if(hasBuyServiceStatus.getServiceUseType()==ServiceUseTypeStatu.ACSSY.getCode()){
                             serviceStatus.setServiceCount(serviceStatus.getServiceCount()-hasBuyServiceStatus.getServiceCountUsed());
                             serviceStatus.setServiceCountUsed(hasBuyServiceStatus.getServiceCountUsed());
                         }
@@ -603,7 +624,7 @@ public class ServiceOrdersController {
                 throw new Exception("请先登录！");
             }
 
-            return serviceOrdersAPIController.buyServicePackage(queryEntity, request);
+            return serviceOrdersAPIController.buyServicePackageWithOutSpeUuid(queryEntity, request);
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCode("00",ex.getMessage(),new ArrayList());

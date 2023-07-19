@@ -142,7 +142,7 @@ public class ServiceStatusController {
             //查询服务期限
             Date d = new Date();
             Map map = new HashMap();
-            ServiceOrders serviceOrders = serviceOrdersDao.findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuid(d,d, queryEntity.getEnterpriseUuid());
+            ServiceOrders serviceOrders = serviceOrdersDao.findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuidAndActive(d,d, queryEntity.getEnterpriseUuid(),1);
             if(serviceOrders == null){
 //                throw new Exception("服务订单信息异常！");
                 map.put("startTime", "");
@@ -309,6 +309,7 @@ public class ServiceStatusController {
                     new BeanCopyUtil().copyProperties(serviceStatus,byUuid,true,new String[]{"sn","uuid"});
                     serviceStatus.setStatusProcess(new BigDecimal(0));
                     serviceStatus.setHasFinished(0);
+                    serviceStatus.setActive(1);
                     serviceStatusDao.save(serviceStatus);
                 }
             }
@@ -420,6 +421,7 @@ public class ServiceStatusController {
                     new BeanCopyUtil().copyProperties(serviceStatus,hasFinish,true,new String[]{"sn","uuid"});
                     serviceStatus.setStatusProcess(new BigDecimal(0));
                     serviceStatus.setHasFinished(0);
+                    serviceStatus.setActive(1);
                     doSave.add(serviceStatus);
                 }
             }

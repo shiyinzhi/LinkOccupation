@@ -45,7 +45,7 @@ public interface ServiceOrdersDao extends ExtJpaRepository<ServiceOrders, String
      * @param enterpriseUuid
      * @return
      */
-    ServiceOrders findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuid(Date startTime,Date endTime,String enterpriseUuid);
+    ServiceOrders findByStartTimeLessThanEqualAndEndTimeGreaterThanEqualAndEnterpriseUuidAndActive(Date startTime,Date endTime,String enterpriseUuid,int active);
 
 
     /**
