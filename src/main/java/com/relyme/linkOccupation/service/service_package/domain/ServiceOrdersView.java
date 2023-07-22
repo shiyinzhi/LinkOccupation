@@ -90,7 +90,7 @@ public class ServiceOrdersView extends BaseEntityForMysql {
      * 优惠活动类型 0 体验包 1 充值好礼
      */
     @Column(name = "special_type", length = 3,columnDefinition="int default 0")
-    private int specialType;
+    private Integer specialType;
 
     /**
      * 折扣 %
@@ -102,44 +102,44 @@ public class ServiceOrdersView extends BaseEntityForMysql {
      * 优惠月数
      */
     @Column(name = "special_monthes", length = 3,columnDefinition="int default 0")
-    private int specialMonthes;
+    private Integer specialMonthes;
 
     /**
      * 优惠次数
      */
     @Column(name = "special_counts", length = 3,columnDefinition="int default 0")
-    private int specialCounts;
+    private Integer specialCounts;
 
     /**
      * 购买年数
      */
     @Column(name = "buy_years", length = 3,columnDefinition="int default 0")
-    private int buyYears;
+    private Integer buyYears;
 
     /**
      * 赠送月数
      */
     @Column(name = "free_monthes", length = 3,columnDefinition="int default 0")
-    private int freeMonthes;
+    private Integer freeMonthes;
 
     /**
      * 购买类型 1 按月购买 2按年购买
      */
     @Column(name = "buy_type", length = 3,columnDefinition="tinyint default 1")
-    private int buyType;
+    private Integer buyType;
 
     /**
      * 购买数量
      */
     @Column(name = "buy_num", length = 11,columnDefinition="int default 0")
-    private int buNum;
+    private Integer buNum;
 
 
     /**
      * 是否开发票 0 否 1是
      */
     @Column(name = "is_invoice", length = 3,columnDefinition="tinyint default 0")
-    private int isInvoice;
+    private Integer isInvoice;
 
     /**
      * 服务套餐订单编号
@@ -193,13 +193,13 @@ public class ServiceOrdersView extends BaseEntityForMysql {
      * 是否线下购买 0 否 1是
      */
     @Column(name = "is_buy_offline", length = 3,columnDefinition="tinyint default 0")
-    private int isBuyOffline;
+    private Integer isBuyOffline;
 
     /**
      * 是否已到期  0 否 1是
      */
     @Column(name = "is_expire", length = 3,columnDefinition="tinyint default 0")
-    private int isExpire;
+    private Integer isExpire;
 
 
 
@@ -225,116 +225,20 @@ public class ServiceOrdersView extends BaseEntityForMysql {
         this.servicePackageUuid = servicePackageUuid;
     }
 
-    public String getEnterpriseUuid() {
-        return enterpriseUuid;
-    }
-
-    public void setEnterpriseUuid(String enterpriseUuid) {
-        this.enterpriseUuid = enterpriseUuid;
-    }
-
-    public String getServiceSpecialOfferUuid() {
-        return serviceSpecialOfferUuid;
-    }
-
-    public void setServiceSpecialOfferUuid(String serviceSpecialOfferUuid) {
-        this.serviceSpecialOfferUuid = serviceSpecialOfferUuid;
-    }
-
-    public int getBuyType() {
-        return buyType;
-    }
-
-    public void setBuyType(int buyType) {
-        this.buyType = buyType;
-    }
-
-    public int getIsInvoice() {
-        return isInvoice;
-    }
-
-    public void setIsInvoice(int isInvoice) {
-        this.isInvoice = isInvoice;
-    }
-
-    public String getServicePricesUuid() {
-        return servicePricesUuid;
-    }
-
-    public void setServicePricesUuid(String servicePricesUuid) {
-        this.servicePricesUuid = servicePricesUuid;
-    }
-
-    public String getServicePackageOrder() {
-        return servicePackageOrder;
-    }
-
-    public void setServicePackageOrder(String servicePackageOrder) {
-        this.servicePackageOrder = servicePackageOrder;
-    }
-
-    public int getBuNum() {
-        return buNum;
-    }
-
-    public void setBuNum(int buNum) {
-        this.buNum = buNum;
-    }
-
-    public BigDecimal getBuyMoney() {
-        return buyMoney;
-    }
-
-    public void setBuyMoney(BigDecimal buyMoney) {
-        this.buyMoney = buyMoney;
-    }
-
-    public Date getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
-
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
-
-    public int getIsBuyOffline() {
-        return isBuyOffline;
-    }
-
-    public void setIsBuyOffline(int isBuyOffline) {
-        this.isBuyOffline = isBuyOffline;
-    }
-
-    public String getEnterpriseScale() {
-        return enterpriseScale;
-    }
-
-    public void setEnterpriseScale(String enterpriseScale) {
-        this.enterpriseScale = enterpriseScale;
-    }
-
-    public Date getPayTime() {
-        return payTime;
-    }
-
-    public void setPayTime(Date payTime) {
-        this.payTime = payTime;
-    }
-
     public String getPackageName() {
         return packageName;
     }
 
     public void setPackageName(String packageName) {
         this.packageName = packageName;
+    }
+
+    public String getEnterpriseUuid() {
+        return enterpriseUuid;
+    }
+
+    public void setEnterpriseUuid(String enterpriseUuid) {
+        this.enterpriseUuid = enterpriseUuid;
     }
 
     public String getEnterpriseName() {
@@ -377,11 +281,27 @@ public class ServiceOrdersView extends BaseEntityForMysql {
         this.employeesUpperLimit = employeesUpperLimit;
     }
 
-    public int getSpecialType() {
+    public String getServicePricesUuid() {
+        return servicePricesUuid;
+    }
+
+    public void setServicePricesUuid(String servicePricesUuid) {
+        this.servicePricesUuid = servicePricesUuid;
+    }
+
+    public String getServiceSpecialOfferUuid() {
+        return serviceSpecialOfferUuid;
+    }
+
+    public void setServiceSpecialOfferUuid(String serviceSpecialOfferUuid) {
+        this.serviceSpecialOfferUuid = serviceSpecialOfferUuid;
+    }
+
+    public Integer getSpecialType() {
         return specialType;
     }
 
-    public void setSpecialType(int specialType) {
+    public void setSpecialType(Integer specialType) {
         this.specialType = specialType;
     }
 
@@ -393,36 +313,76 @@ public class ServiceOrdersView extends BaseEntityForMysql {
         this.serviceDiscounts = serviceDiscounts;
     }
 
-    public int getSpecialMonthes() {
+    public Integer getSpecialMonthes() {
         return specialMonthes;
     }
 
-    public void setSpecialMonthes(int specialMonthes) {
+    public void setSpecialMonthes(Integer specialMonthes) {
         this.specialMonthes = specialMonthes;
     }
 
-    public int getSpecialCounts() {
+    public Integer getSpecialCounts() {
         return specialCounts;
     }
 
-    public void setSpecialCounts(int specialCounts) {
+    public void setSpecialCounts(Integer specialCounts) {
         this.specialCounts = specialCounts;
     }
 
-    public int getBuyYears() {
+    public Integer getBuyYears() {
         return buyYears;
     }
 
-    public void setBuyYears(int buyYears) {
+    public void setBuyYears(Integer buyYears) {
         this.buyYears = buyYears;
     }
 
-    public int getFreeMonthes() {
+    public Integer getFreeMonthes() {
         return freeMonthes;
     }
 
-    public void setFreeMonthes(int freeMonthes) {
+    public void setFreeMonthes(Integer freeMonthes) {
         this.freeMonthes = freeMonthes;
+    }
+
+    public Integer getBuyType() {
+        return buyType;
+    }
+
+    public void setBuyType(Integer buyType) {
+        this.buyType = buyType;
+    }
+
+    public Integer getBuNum() {
+        return buNum;
+    }
+
+    public void setBuNum(Integer buNum) {
+        this.buNum = buNum;
+    }
+
+    public Integer getIsInvoice() {
+        return isInvoice;
+    }
+
+    public void setIsInvoice(Integer isInvoice) {
+        this.isInvoice = isInvoice;
+    }
+
+    public String getServicePackageOrder() {
+        return servicePackageOrder;
+    }
+
+    public void setServicePackageOrder(String servicePackageOrder) {
+        this.servicePackageOrder = servicePackageOrder;
+    }
+
+    public BigDecimal getBuyMoney() {
+        return buyMoney;
+    }
+
+    public void setBuyMoney(BigDecimal buyMoney) {
+        this.buyMoney = buyMoney;
     }
 
     public BigDecimal getBackgroundDiscounts() {
@@ -441,11 +401,51 @@ public class ServiceOrdersView extends BaseEntityForMysql {
         this.trueBuyMoney = trueBuyMoney;
     }
 
-    public int getIsExpire() {
+    public Date getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
+    public Date getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    public Date getPayTime() {
+        return payTime;
+    }
+
+    public void setPayTime(Date payTime) {
+        this.payTime = payTime;
+    }
+
+    public Integer getIsBuyOffline() {
+        return isBuyOffline;
+    }
+
+    public void setIsBuyOffline(Integer isBuyOffline) {
+        this.isBuyOffline = isBuyOffline;
+    }
+
+    public Integer getIsExpire() {
         return isExpire;
     }
 
-    public void setIsExpire(int isExpire) {
+    public void setIsExpire(Integer isExpire) {
         this.isExpire = isExpire;
+    }
+
+    public String getEnterpriseScale() {
+        return enterpriseScale;
+    }
+
+    public void setEnterpriseScale(String enterpriseScale) {
+        this.enterpriseScale = enterpriseScale;
     }
 }

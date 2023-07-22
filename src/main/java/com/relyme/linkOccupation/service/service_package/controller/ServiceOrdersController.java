@@ -421,6 +421,10 @@ public class ServiceOrdersController {
                 }
 
                 serviceSpecialOffer = serviceSpecialOfferList.get(0);
+                //使用原来的套餐优惠
+//                if(serviceSpecialOffer == null && StringUtils.isNotEmpty(hasBuyOrder.getServiceSpecialOfferUuid())){
+//                    serviceSpecialOffer = serviceSpecialOfferDao.findByUuid(hasBuyOrder.getServiceSpecialOfferUuid());
+//                }
             }
 
             ServiceOrders serviceOrders = new ServiceOrders();
@@ -490,6 +494,7 @@ public class ServiceOrdersController {
             serviceOrders.setIsBuyOffline(1);
             serviceOrders.setPayTime(new Date());
             serviceOrders.setTrueBuyMoney(serviceOrders.getBuyMoney());
+            serviceOrders.setServiceSpecialOfferUuid(hasBuyOrder.getServiceSpecialOfferUuid());
             serviceOrdersDao.save(serviceOrders);
 
             //禁用原来的订单
