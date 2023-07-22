@@ -3,7 +3,10 @@ package com.relyme.linkOccupation.service.department.controller;
 
 import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
 import com.relyme.linkOccupation.service.department.dao.DepartmentDao;
+import com.relyme.linkOccupation.service.department.dao.PostDao;
 import com.relyme.linkOccupation.service.department.domain.Department;
+import com.relyme.linkOccupation.service.department.domain.Post;
+import com.relyme.linkOccupation.service.department.dto.DepartmentAllDto;
 import com.relyme.linkOccupation.service.department.dto.DepartmentDto;
 import com.relyme.linkOccupation.service.department.dto.DepartmentQueryDto;
 import com.relyme.linkOccupation.service.department.dto.DepartmentQueryUuidDto;
@@ -21,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +45,7 @@ import java.util.List;
 @RestController
 @Api(value = "企业部门信息", tags = "企业部门信息")
 @RequestMapping("department")
+@Transactional
 public class DepartmentController {
 
     @Autowired
@@ -51,6 +56,9 @@ public class DepartmentController {
 
     @Autowired
     CustAccountDao custAccountDao;
+
+    @Autowired
+    PostDao postDao;
 
 
     /**
@@ -148,6 +156,68 @@ public class DepartmentController {
             departmentDao.save(byUuid);
 
             return new ResultCodeNew("0","更新成功！",byUuid);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCodeNew("00",ex.getMessage());
+        }
+    }
+
+
+    /**
+     * 添加或修改 部门岗位信息
+     * @return
+     */
+    @ApiOperation("添加或修改 部门岗位信息")
+    @JSON(type = Department.class  , include="uuid")
+    @RequestMapping(value="/updateAll",method = RequestMethod.POST,produces={"application/json;charset=UTF-8","text/html;charset=UTF-8"})
+    public Object updateAll(@Validated @RequestBody DepartmentAllDto entity, HttpServletRequest request) {
+        try{
+
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(entity.getEnterpriseUuid())){
+                throw new Exception("企业信息不能为空！");
+            }
+
+            if(StringUtils.isEmpty(entity.getDepartmentName())){
+                throw new Exception("部门名称不能为空！");
+            }
+
+            if(StringUtils.isEmpty(entity.getPostName())){
+                throw new Exception("岗位名称不能为空！");
+            }
+
+            Department department = departmentDao.findByDepartmentNameAndEnterpriseUuid(entity.getDepartmentName(), entity.getEnterpriseUuid());
+            if(department == null){
+                department = new Department();
+                department.setDepartmentName(entity.getDepartmentName());
+                department.setEnterpriseUuid(entity.getEnterpriseUuid());
+                department.setUserAccountUuid(userAccount.getUuid());
+
+                Post post = new Post();
+                post.setDepartmentUuid(department.getUuid());
+                post.setEnterpriseUuid(department.getEnterpriseUuid());
+                post.setPostName(entity.getPostName());
+                post.setUserAccountUuid(userAccount.getUuid());
+                postDao.save(post);
+            }else{
+                Post post = postDao.findByPostNameAndDepartmentUuid(entity.getPostName(), department.getUuid());
+                if(post == null){
+                    post = new Post();
+                    post.setDepartmentUuid(department.getUuid());
+                    post.setEnterpriseUuid(department.getEnterpriseUuid());
+                    post.setPostName(entity.getPostName());
+                    post.setUserAccountUuid(userAccount.getUuid());
+                    postDao.save(post);
+                }
+            }
+            departmentDao.save(department);
+
+            return new ResultCodeNew("0","更新成功！",department);
         }catch(Exception ex){
             ex.printStackTrace();
             return new ResultCodeNew("00",ex.getMessage());

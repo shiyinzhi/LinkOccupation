@@ -174,10 +174,16 @@ public class ServiceOrdersController {
 
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
                 if(enterpriseInfo != null){
-                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                    if(byMobile != null){
+//                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                    if(byMobile != null){
+//                        //发送模板消息
+//                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您已购买套餐："+servicePackage.getPackageName(),"套餐购买","您已成功购买套餐："+servicePackage.getPackageName());
+//                    }
+
+                    List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                    for (CustAccount custAccount : custAccountList) {
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您已购买套餐："+servicePackage.getPackageName(),"套餐购买","您已成功购买套餐："+servicePackage.getPackageName());
+                        wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/my/sub/order",null,"您已购买套餐："+servicePackage.getPackageName(),"套餐购买","您已成功购买套餐："+servicePackage.getPackageName());
                     }
                 }
 

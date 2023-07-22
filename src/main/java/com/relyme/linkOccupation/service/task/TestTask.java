@@ -620,10 +620,16 @@ public class TestTask {
                 //消息提醒服务即将到期
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
                 if(enterpriseInfo != null){
-                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                    if(byMobile != null){
+//                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                    if(byMobile != null){
+//                        //发送模板消息
+//                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您的服务即将到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务即将到期");
+//                    }
+
+                    List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                    for (CustAccount custAccount : custAccountList) {
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/order",null,"您的服务即将到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务即将到期");
+                        wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/my/sub/order",null,"您的服务即将到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务即将到期");
                     }
                 }
 
@@ -719,10 +725,15 @@ public class TestTask {
                 //消息提醒服务即将到期
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
                 if(enterpriseInfo != null){
-                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                    if(byMobile != null){
-                        //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的服务已到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务已到期");
+//                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                    if(byMobile != null){
+//                        //发送模板消息
+//                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"您的服务已到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务已到期");
+//                    }
+
+                    List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                    for (CustAccount custAccount : custAccountList) {
+                        wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/index/company-index",null,"您的服务已到期，结束时间："+DateUtil.dateToString(serviceOrders.getEndTime(),DateUtil.FORMAT_ONE),"服务状态","服务已到期");
                     }
                 }
 

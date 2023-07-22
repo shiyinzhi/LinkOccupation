@@ -76,13 +76,13 @@ public class MissionResumeView extends BaseEntityForMysql {
      * 招聘人数
      */
     @Column(name = "person_count", length = 3,columnDefinition="tinyint default 0")
-    private int personCount;
+    private Integer personCount;
 
     /**
      * 已报名人数
      */
     @Column(name = "join_count", length = 3,columnDefinition="tinyint default 0")
-    private int joinCount;
+    private Integer joinCount;
 
 
     /**
@@ -125,7 +125,7 @@ public class MissionResumeView extends BaseEntityForMysql {
      * 任务状态 0未开始 1已接单 2正在服务 3完成服务 4已评价 5停止招聘
      */
     @Column(name = "mission_status", length = 3,columnDefinition="tinyint default 0")
-    private int missionStatus;
+    private Integer missionStatus;
 
 
     /**
@@ -222,13 +222,13 @@ public class MissionResumeView extends BaseEntityForMysql {
      * 是否下架 0下架 1上架
      */
     @Column(name = "is_close", length = 3,columnDefinition="tinyint default 1")
-    private int isClose;
+    private Integer isClose;
 
     /**
      * 雇员端状态 0待确认 1雇主已确认 2雇主已拒绝 3雇员已拒绝 4雇员已确认 5双方已确认 6雇员确认已完成 7待评价 8已评价
      */
     @Column(name = "mission_record_status", length = 3,columnDefinition="tinyint default 0")
-    private int missionRecordStatus;
+    private Integer missionRecordStatus;
 
 
     public String getCustAccountUuid() {
@@ -237,6 +237,30 @@ public class MissionResumeView extends BaseEntityForMysql {
 
     public void setCustAccountUuid(String custAccountUuid) {
         this.custAccountUuid = custAccountUuid;
+    }
+
+    public String getEmployerUuid() {
+        return employerUuid;
+    }
+
+    public void setEmployerUuid(String employerUuid) {
+        this.employerUuid = employerUuid;
+    }
+
+    public String getEmployeeCustAccountUuid() {
+        return employeeCustAccountUuid;
+    }
+
+    public void setEmployeeCustAccountUuid(String employeeCustAccountUuid) {
+        this.employeeCustAccountUuid = employeeCustAccountUuid;
+    }
+
+    public Integer getEmployerType() {
+        return employerType;
+    }
+
+    public void setEmployerType(Integer employerType) {
+        this.employerType = employerType;
     }
 
     public String getMissionName() {
@@ -263,12 +287,36 @@ public class MissionResumeView extends BaseEntityForMysql {
         this.employmentTypeUuid = employmentTypeUuid;
     }
 
-    public int getPersonCount() {
+    public String getEmploymentTypeName() {
+        return employmentTypeName;
+    }
+
+    public void setEmploymentTypeName(String employmentTypeName) {
+        this.employmentTypeName = employmentTypeName;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
+    public Integer getPersonCount() {
         return personCount;
     }
 
-    public void setPersonCount(int personCount) {
+    public void setPersonCount(Integer personCount) {
         this.personCount = personCount;
+    }
+
+    public Integer getJoinCount() {
+        return joinCount;
+    }
+
+    public void setJoinCount(Integer joinCount) {
+        this.joinCount = joinCount;
     }
 
     public String getMissionPlace() {
@@ -287,6 +335,14 @@ public class MissionResumeView extends BaseEntityForMysql {
         this.missionPrice = missionPrice;
     }
 
+    public BigDecimal getMissionMaxPrice() {
+        return missionMaxPrice;
+    }
+
+    public void setMissionMaxPrice(BigDecimal missionMaxPrice) {
+        this.missionMaxPrice = missionMaxPrice;
+    }
+
     public Date getDeliverEndTime() {
         return deliverEndTime;
     }
@@ -303,44 +359,12 @@ public class MissionResumeView extends BaseEntityForMysql {
         this.missionStartTime = missionStartTime;
     }
 
-    public int getMissionStatus() {
+    public Integer getMissionStatus() {
         return missionStatus;
     }
 
-    public void setMissionStatus(int missionStatus) {
+    public void setMissionStatus(Integer missionStatus) {
         this.missionStatus = missionStatus;
-    }
-
-    public int getJoinCount() {
-        return joinCount;
-    }
-
-    public void setJoinCount(int joinCount) {
-        this.joinCount = joinCount;
-    }
-
-    public String getEmploymentTypeName() {
-        return employmentTypeName;
-    }
-
-    public void setEmploymentTypeName(String employmentTypeName) {
-        this.employmentTypeName = employmentTypeName;
-    }
-
-    public String getEmployerUuid() {
-        return employerUuid;
-    }
-
-    public void setEmployerUuid(String employerUuid) {
-        this.employerUuid = employerUuid;
-    }
-
-    public Integer getEmployerType() {
-        return employerType;
-    }
-
-    public void setEmployerType(Integer employerType) {
-        this.employerType = employerType;
     }
 
     public Integer getEnActive() {
@@ -407,14 +431,6 @@ public class MissionResumeView extends BaseEntityForMysql {
         this.individualName = individualName;
     }
 
-    public String getTypeName() {
-        return typeName;
-    }
-
-    public void setTypeName(String typeName) {
-        this.typeName = typeName;
-    }
-
     public Integer getEnEnterpriseType() {
         return enEnterpriseType;
     }
@@ -471,35 +487,19 @@ public class MissionResumeView extends BaseEntityForMysql {
         this.inCreditScore = inCreditScore;
     }
 
-    public int getIsClose() {
+    public Integer getIsClose() {
         return isClose;
     }
 
-    public void setIsClose(int isClose) {
+    public void setIsClose(Integer isClose) {
         this.isClose = isClose;
     }
 
-    public BigDecimal getMissionMaxPrice() {
-        return missionMaxPrice;
-    }
-
-    public void setMissionMaxPrice(BigDecimal missionMaxPrice) {
-        this.missionMaxPrice = missionMaxPrice;
-    }
-
-    public String getEmployeeCustAccountUuid() {
-        return employeeCustAccountUuid;
-    }
-
-    public void setEmployeeCustAccountUuid(String employeeCustAccountUuid) {
-        this.employeeCustAccountUuid = employeeCustAccountUuid;
-    }
-
-    public int getMissionRecordStatus() {
+    public Integer getMissionRecordStatus() {
         return missionRecordStatus;
     }
 
-    public void setMissionRecordStatus(int missionRecordStatus) {
+    public void setMissionRecordStatus(Integer missionRecordStatus) {
         this.missionRecordStatus = missionRecordStatus;
     }
 }

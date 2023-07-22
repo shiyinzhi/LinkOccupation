@@ -40,6 +40,7 @@ import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -168,10 +169,16 @@ public class InvoiceController {
 
             EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(byUuid.getEnterpriseUuid());
             if(enterpriseInfo != null){
-                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                if(byMobile != null){
+//                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                if(byMobile != null){
+//                    //发送模板消息
+//                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成线下开票","线下开票","线下已开票");
+//                }
+
+                List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                for (CustAccount custAccount : custAccountList) {
                     //发送模板消息
-                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/index/company-index",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成线下开票","线下开票","线下已开票");
+                    wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/index/company-index",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成线下开票","线下开票","线下已开票");
                 }
             }
 

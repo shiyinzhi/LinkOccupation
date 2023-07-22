@@ -57,10 +57,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author shiyinzhi
@@ -210,10 +207,15 @@ public class WageScheduleController {
 
             EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(byUuid.getEnterpriseUuid());
             if(enterpriseInfo != null){
-                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                if(byMobile != null){
+//                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                if(byMobile != null){
+//                    //发送模板消息
+//                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+byUuid.getRosterName()+"完成工资发放","工资发放","已完成发放");
+//                }
+                List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                for (CustAccount custAccount : custAccountList) {
                     //发送模板消息
-                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+byUuid.getRosterName()+"完成工资发放","工资发放","已完成发放");
+                    wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/service/hr/list",null,"已为"+byUuid.getRosterName()+"完成工资发放","工资发放","已完成发放");
                 }
             }
 
@@ -259,10 +261,15 @@ public class WageScheduleController {
                 WageSchedule wageSchedule = hasUpdates.get(0);
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(wageSchedule.getEnterpriseUuid());
                 if(enterpriseInfo != null){
-                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                    if(byMobile != null){
+//                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                    if(byMobile != null){
+//                        //发送模板消息
+//                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成工资发放","工资发放","已完成发放");
+//                    }
+                    List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                    for (CustAccount custAccount : custAccountList) {
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成工资发放","工资发放","已完成发放");
+                        wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/service/hr/list",null,"已完成工资发放","工资发放","已完成发放");
                     }
                 }
             }

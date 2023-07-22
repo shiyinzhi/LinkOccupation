@@ -144,6 +144,12 @@ public class Mission extends BaseEntityForMysql {
     @Column(name = "post_uuid",length = 36)
     private String postUuid;
 
+    /**
+     * 是否后台代发 0不是 1是
+     */
+    @Column(name = "is_agency_published", length = 3,columnDefinition="tinyint default 0")
+    private int isAgencyPublished;
+
 
     @Transient
     private boolean isJoin = false;
@@ -436,5 +442,13 @@ public class Mission extends BaseEntityForMysql {
 
     public void setIshideMobile(int ishideMobile) {
         this.ishideMobile = ishideMobile;
+    }
+
+    public int getIsAgencyPublished() {
+        return isAgencyPublished;
+    }
+
+    public void setIsAgencyPublished(int isAgencyPublished) {
+        this.isAgencyPublished = isAgencyPublished;
     }
 }

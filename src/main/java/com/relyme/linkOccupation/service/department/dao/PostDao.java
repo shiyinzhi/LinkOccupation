@@ -14,4 +14,12 @@ public interface PostDao extends ExtJpaRepository<Post, String>, JpaSpecificatio
      */
     Post findByUuid(String uuid);
 
+    /**
+     * 根据岗位名称和部门uuid查询信息
+     * @param postName
+     * @param departmentUuid
+     * @return
+     */
+    Post findByPostNameAndDepartmentUuid(String postName,String departmentUuid);
+
 }

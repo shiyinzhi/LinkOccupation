@@ -274,10 +274,15 @@ public class ServiceStatusController {
 
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(byUuid.getEnterpriseUuid());
                 if(enterpriseInfo != null){
-                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                    if(byMobile != null){
-                        //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
+//                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                    if(byMobile != null){
+//                        //发送模板消息
+//                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
+//                    }
+
+                    List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                    for (CustAccount custAccount : custAccountList) {
+                        wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
                     }
                 }
 
@@ -294,10 +299,15 @@ public class ServiceStatusController {
                 if(queryEntity.getStatusProcess().compareTo(new BigDecimal(100)) == 0){
                     EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(byUuid.getEnterpriseUuid());
                     if(enterpriseInfo != null){
-                        CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                        if(byMobile != null){
+//                        CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                        if(byMobile != null){
+//                            //发送模板消息
+//                            wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
+//                        }
+                        List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                        for (CustAccount custAccount : custAccountList) {
                             //发送模板消息
-                            wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
+                            wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/service/hr/list",null,"已完成服务"+byUuid.getServiceContent(),"服务状态","已完成服务");
                         }
                     }
 
@@ -408,10 +418,15 @@ public class ServiceStatusController {
             for (ServiceStatus hasFinish : hasFinished) {
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(hasFinish.getEnterpriseUuid());
                 if(enterpriseInfo != null){
-                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                    if(byMobile != null){
+//                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                    if(byMobile != null){
+//                        //发送模板消息
+//                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+hasFinish.getServiceContent(),"服务状态","已完成服务");
+//                    }
+                    List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                    for (CustAccount custAccount : custAccountList) {
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已完成服务"+hasFinish.getServiceContent(),"服务状态","已完成服务");
+                        wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/service/hr/list",null,"已完成服务"+hasFinish.getServiceContent(),"服务状态","已完成服务");
                     }
                 }
 

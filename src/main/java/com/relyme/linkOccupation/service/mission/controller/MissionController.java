@@ -1,19 +1,23 @@
 package com.relyme.linkOccupation.service.mission.controller;
 
 
+import com.relyme.linkOccupation.service.Individual_employers.dao.IndividualEmployersDao;
+import com.relyme.linkOccupation.service.custaccount.dao.CustAccountDao;
+import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.employment_type.dao.EmploymentTypeDao;
 import com.relyme.linkOccupation.service.employment_type.domain.EmploymentType;
+import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
+import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.mission.dao.MissionDao;
 import com.relyme.linkOccupation.service.mission.dao.MissionResumeViewDao;
 import com.relyme.linkOccupation.service.mission.dao.MissionViewDao;
 import com.relyme.linkOccupation.service.mission.domain.*;
-import com.relyme.linkOccupation.service.mission.dto.MissionDelDto;
-import com.relyme.linkOccupation.service.mission.dto.MissionQueryAllDto;
-import com.relyme.linkOccupation.service.mission.dto.MissionQueryResumeAllDto;
-import com.relyme.linkOccupation.service.mission.dto.MissionQueryUuidXDto;
+import com.relyme.linkOccupation.service.mission.dto.*;
+import com.relyme.linkOccupation.service.resume.dao.ResumeExpectationViewDao;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
+import com.relyme.linkOccupation.utils.bean.BeanCopyUtil;
 import com.relyme.linkOccupation.utils.bean.ResultCode;
 import com.relyme.linkOccupation.utils.bean.ResultCodeNew;
 import com.relyme.linkOccupation.utils.date.DateUtil;
@@ -36,6 +40,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -58,6 +63,103 @@ public class MissionController {
 
     @Autowired
     EmploymentTypeDao employmentTypeDao;
+
+    @Autowired
+    EnterpriseInfoDao enterpriseInfoDao;
+
+    @Autowired
+    IndividualEmployersDao individualEmployersDao;
+
+    @Autowired
+    ResumeExpectationViewDao resumeExpectationViewDao;
+
+    @Autowired
+    MissionAPIController missionAPIController;
+
+    @Autowired
+    CustAccountDao custAccountDao;
+
+    /**
+     * 添加或修改 后台人事管家 招聘服务发布招聘任务
+     * @return
+     */
+    @ApiOperation("添加或修改")
+    @JSON(type = Mission.class  , include="uuid")
+    @RequestMapping(value="/update",method = RequestMethod.POST,produces={"application/json;charset=UTF-8","text/html;charset=UTF-8"})
+    public Object update(@Validated @RequestBody MissionUpdateBackGroundDto entity, HttpServletRequest request) {
+        try{
+
+            if(StringUtils.isEmpty(entity.getEmploymentTypeUuid())){
+                throw new Exception("工种uuid 为空！");
+            }
+
+            EnterpriseInfo enterpriseInfo = null;
+            enterpriseInfo = enterpriseInfoDao.findByUuid(entity.getEnterpriseUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+            if(enterpriseInfo != null && enterpriseInfo.getIsInBlacklist() == 1){
+                throw new Exception("企业正在黑名单中，请联系管理员！");
+            }
+
+            //根据企业联系电话，查询联系电话账号信息
+            CustAccount custAccount = new CustAccount();
+            List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+            if(custAccountList != null && custAccountList.size() > 0){
+                custAccount = custAccountList.get(0);
+            }
+            Mission byUuid = null;
+            boolean isAutoJoinMission = false;
+            if(StringUtils.isNotEmpty(entity.getUuid())){
+                byUuid = missionDao.findByUuid(entity.getUuid());
+                if(byUuid != null){
+                    new BeanCopyUtil().copyProperties(byUuid,entity,true,new String[]{"sn"});
+                }
+            }else{
+                byUuid = new Mission();
+                new BeanCopyUtil().copyProperties(byUuid,entity,true,new String[]{"sn","uuid"});
+                isAutoJoinMission = true;
+            }
+            //启用任务
+            byUuid.setIsClose(1);
+            byUuid.setEmployerUuid(enterpriseInfo.getUuid());
+            byUuid.setEmployerType(3);
+            byUuid.setIsAgencyPublished(1);
+            if(custAccount != null){
+                byUuid.setCustAccountUuid(custAccount.getUuid());
+            }
+            missionDao.save(byUuid);
+
+            if(isAutoJoinMission){
+                //任务期望为立即接单的雇员  立即接单 随机获取和期望匹配的雇员uuid
+                Object[] randResumeExpectation = resumeExpectationViewDao.getRandResumeExpectation(byUuid.getEmploymentTypeUuid(), byUuid.getPersonCount());
+                List<String> emploeeyUuids = new ArrayList<>();
+                for (Object o : randResumeExpectation) {
+                    emploeeyUuids.add((String) o);
+                }
+
+                //主动加入任务
+                if(emploeeyUuids.size() > 0){
+                    MissionJoinDto missionJoinDto = null;
+                    for (String emploeeyUuid : emploeeyUuids) {
+                        missionJoinDto = new MissionJoinDto();
+                        missionJoinDto.setEmployeeUuid(emploeeyUuid);
+                        missionJoinDto.setMissionUuid(byUuid.getUuid());
+                        missionAPIController.joinMission(missionJoinDto,request);
+                    }
+                }
+            }
+
+            //给管理员发送微信消息
+            missionAPIController.sendMsgToAdmin(null, enterpriseInfo, byUuid);
+
+
+            return new ResultCodeNew("0","更新成功！",byUuid);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCodeNew("00",ex.getMessage());
+        }
+    }
 
 
     /**

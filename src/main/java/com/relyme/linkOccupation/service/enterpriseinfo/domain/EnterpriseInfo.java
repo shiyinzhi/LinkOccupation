@@ -64,7 +64,7 @@ public class EnterpriseInfo extends BaseEntityForMysql {
     /**
      * 企业联系电话
      */
-    @Column(name = "contact_phone",length = 12)
+    @Column(name = "contact_phone",length = 512)
     private String contactPhone;
 
     /**

@@ -47,6 +47,13 @@ public interface CustAccountDao extends ExtJpaRepository<CustAccount, String>, J
      */
     CustAccount findByMobile(String mobile);
 
+    /**
+     * 通过手机号集合查询信息
+     * @param mobiles
+     * @return
+     */
+    List<CustAccount> findByMobileIsIn(List<String> mobiles);
+
 
     /**
      *

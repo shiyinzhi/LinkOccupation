@@ -225,7 +225,7 @@ public class MissionAPIController {
      * @param enterpriseInfo
      * @param byUuid
      */
-    private void sendMsgToAdmin(IndividualEmployers individualEmployers, EnterpriseInfo enterpriseInfo, Mission byUuid) {
+    public void sendMsgToAdmin(IndividualEmployers individualEmployers, EnterpriseInfo enterpriseInfo, Mission byUuid) {
         try {
             List<AdminMsg> all = adminMsgDao.findAll();
             for (AdminMsg adminMsg : all) {

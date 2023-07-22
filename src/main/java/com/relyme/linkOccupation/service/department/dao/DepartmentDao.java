@@ -14,4 +14,11 @@ public interface DepartmentDao extends ExtJpaRepository<Department, String>, Jpa
      */
     Department findByUuid(String uuid);
 
+    /**
+     * 通过名字查询
+     * @param departmentName
+     * @return
+     */
+    Department findByDepartmentNameAndEnterpriseUuid(String departmentName,String enterpriseUuid);
+
 }

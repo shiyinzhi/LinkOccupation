@@ -8,10 +8,7 @@ import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoViewDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfoView;
-import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoExportQueryDto;
-import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoQueryDto;
-import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoQueryUuidDto;
-import com.relyme.linkOccupation.service.enterpriseinfo.dto.EnterpriseInfoQueryVIPDto;
+import com.relyme.linkOccupation.service.enterpriseinfo.dto.*;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
@@ -210,6 +207,48 @@ public class EnterpriseInfoController {
                 active = 0;
             }
             byUuid.setIsEntAgency(active);
+            enterpriseInfoDao.save(byUuid);
+
+            return new ResultCodeNew("0","",byUuid);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 更新企业联系人
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("更新企业联系人")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = EnterpriseInfo.class,include = "uuid")
+    @RequestMapping(value="/updateContactPhone",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object updateContactPhone(@Validated @RequestBody EnterpriseInfoQueryContanctPhoneUuidDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getUuid())){
+                throw new Exception("企业uuid为空！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getContactPhone())){
+                throw new Exception("企业联系电话为空！");
+            }
+
+            EnterpriseInfo byUuid = enterpriseInfoDao.findByUuid(queryEntity.getUuid());
+            if(byUuid == null){
+                throw new Exception("企业雇主信息异常！");
+            }
+
+
+            byUuid.setContactPhone(queryEntity.getContactPhone());
             enterpriseInfoDao.save(byUuid);
 
             return new ResultCodeNew("0","",byUuid);

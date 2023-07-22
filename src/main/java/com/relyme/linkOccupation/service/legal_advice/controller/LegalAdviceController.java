@@ -38,6 +38,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -106,10 +107,15 @@ public class LegalAdviceController {
 
             EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(legalAdvice.getEnterpriseUuid());
             if(enterpriseInfo != null){
-                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                if(byMobile != null){
+//                CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                if(byMobile != null){
+//                    //发送模板消息
+//                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/message",null,"您的法律咨询已得到处理，请注意查阅和评价","法律咨询","法律咨询已处理");
+//                }
+                List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                for (CustAccount custAccount : custAccountList) {
                     //发送模板消息
-                    wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/my/sub/message",null,"您的法律咨询已得到处理，请注意查阅和评价","法律咨询","法律咨询已处理");
+                    wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/my/sub/message",null,"您的法律咨询已得到处理，请注意查阅和评价","法律咨询","法律咨询已处理");
                 }
             }
 

@@ -54,10 +54,7 @@ import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author shiyinzhi
@@ -126,10 +123,15 @@ public class InviteServiceController {
             if(isSendMsg){
                 EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(byUuid.getEnterpriseUuid());
                 if(enterpriseInfo != null){
-                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
-                    if(byMobile != null){
+//                    CustAccount byMobile = custAccountDao.findByMobile(enterpriseInfo.getContactPhone());
+//                    if(byMobile != null){
+//                        //发送模板消息
+//                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成招聘，招聘人数"+byUuid.getInviteNums()+"人","企业招聘","已完成招聘");
+//                    }
+                    List<CustAccount> custAccountList = custAccountDao.findByMobileIsIn(Arrays.asList(enterpriseInfo.getContactPhone().split(",")));
+                    for (CustAccount custAccount : custAccountList) {
                         //发送模板消息
-                        wechatTemplateMsg.SendMsg(byMobile.getUuid(),"/pages/service/hr/list",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成招聘，招聘人数"+byUuid.getInviteNums()+"人","企业招聘","已完成招聘");
+                        wechatTemplateMsg.SendMsg(custAccount.getUuid(),"/pages/service/hr/list",null,"已为"+enterpriseInfo.getEnterpriseName()+"完成招聘，招聘人数"+byUuid.getInviteNums()+"人","企业招聘","已完成招聘");
                     }
                 }
             }
