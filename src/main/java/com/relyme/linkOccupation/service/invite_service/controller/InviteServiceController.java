@@ -7,15 +7,15 @@ import com.relyme.linkOccupation.service.custaccount.domain.CustAccount;
 import com.relyme.linkOccupation.service.enterpriseinfo.dao.EnterpriseInfoDao;
 import com.relyme.linkOccupation.service.enterpriseinfo.domain.EnterpriseInfo;
 import com.relyme.linkOccupation.service.invite_service.dao.InviteServiceDao;
+import com.relyme.linkOccupation.service.invite_service.dao.InviteServiceMissionNewViewDao;
 import com.relyme.linkOccupation.service.invite_service.dao.InviteServiceMissionViewDao;
 import com.relyme.linkOccupation.service.invite_service.dao.InviteServiceViewDao;
 import com.relyme.linkOccupation.service.invite_service.domain.InviteService;
-import com.relyme.linkOccupation.service.invite_service.domain.InviteServiceMissionView;
+import com.relyme.linkOccupation.service.invite_service.domain.InviteServiceMissionNewView;
 import com.relyme.linkOccupation.service.invite_service.domain.InviteServiceView;
 import com.relyme.linkOccupation.service.invite_service.dto.InviteServiceDto;
 import com.relyme.linkOccupation.service.invite_service.dto.InviteServiceQueryDto;
 import com.relyme.linkOccupation.service.invite_service.dto.InviteServiceQueryExcelOutDto;
-import com.relyme.linkOccupation.service.mission.domain.MissionRecordStatu;
 import com.relyme.linkOccupation.service.useraccount.domain.LoginBean;
 import com.relyme.linkOccupation.service.useraccount.domain.UserAccount;
 import com.relyme.linkOccupation.utils.JSON;
@@ -81,6 +81,9 @@ public class InviteServiceController {
 
     @Autowired
     InviteServiceMissionViewDao inviteServiceMissionViewDao;
+
+    @Autowired
+    InviteServiceMissionNewViewDao inviteServiceMissionNewViewDao;
 
 
 
@@ -219,6 +222,90 @@ public class InviteServiceController {
     }
 
 
+//    /**
+//     * 条件查询信息 从发布任务查询
+//     * @param queryEntity
+//     * @return
+//     */
+//    @ApiOperation("条件查询信息 从发布任务查询")
+//    @JSON(type = PageImpl.class  , include="content,totalElements")
+//    @JSON(type = InviteServiceMissionView.class,include = "departmentName,postName,countNum,updateTime")
+//    @RequestMapping(value="/findByConditionMissionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+//    public Object findByConditionMissionAPI(@Validated @RequestBody InviteServiceQueryDto queryEntity, HttpServletRequest request) {
+//        try{
+//
+//            UserAccount userAccount = LoginBean.getUserAccount(request);
+//            if(userAccount == null){
+//                throw new Exception("请先登录！");
+//            }
+//
+//            //查询默认当天的费用记录
+//            Specification<InviteServiceMissionView> specification=new Specification<InviteServiceMissionView>() {
+//                private static final long serialVersionUID = 1L;
+//
+//                @Override
+//                public Predicate toPredicate(Root<InviteServiceMissionView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+//                    List<Predicate> predicates = new ArrayList<>();
+//                    List<Predicate> predicates_or = new ArrayList<>();
+//                    Predicate condition_tData = null;
+//
+//                    if(StringUtils.isNotEmpty(queryEntity.getEnterpriseUuid())){
+//                        predicates.add(criteriaBuilder.equal(root.get("enterpriseUuid"), queryEntity.getEnterpriseUuid()));
+//                    }
+//
+//                    if(StringUtils.isNotEmpty(queryEntity.getDepartmentUuid())){
+//                        predicates.add(criteriaBuilder.equal(root.get("departmentUuid"), queryEntity.getDepartmentUuid()));
+//                    }
+//
+//                    if(StringUtils.isNotEmpty(queryEntity.getPostUuid())){
+//                        predicates.add(criteriaBuilder.equal(root.get("postUuid"), queryEntity.getPostUuid()));
+//                    }
+//
+//                    if(queryEntity.getInviteTime() != null){
+//                        String StartTime = DateUtil.dateToString(queryEntity.getInviteTime(),DateUtil.MONTG_DATE_FORMAT);
+//                        Calendar calendar = Calendar.getInstance();
+//                        calendar.setTime(queryEntity.getInviteTime());
+//                        String EndTime = DateUtil.getLastDayOfMonth(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH)+1);
+//                        Date startDate = DateUtil.stringtoDate(StartTime + "-01 00:00:00", DateUtil.FORMAT_ONE);
+//                        Date endDate = DateUtil.stringtoDate(EndTime + " 23:59:59", DateUtil.FORMAT_ONE);
+//                        predicates.add(criteriaBuilder.between(root.get("updateTime"), startDate,endDate));
+//                    }
+//
+////                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
+////                    predicates.add(condition_tData);
+//                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.SFYQR.getCode()));
+//                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GYYQRWC.getCode()));
+//                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.DPJ.getCode()));
+//                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.YPJ.getCode()));
+//                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GZYPJ.getCode()));
+//                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GYYPJ.getCode()));
+//                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GZYQRWC.getCode()));
+//
+//
+//
+//                    if(predicates_or.size() > 0){
+//                        predicates.add(criteriaBuilder.or(predicates_or.toArray(new Predicate[predicates_or.size()])));
+//                    }
+//
+//                    Predicate[] predicates1 = new Predicate[predicates.size()];
+//                    query.where(predicates.toArray(predicates1));
+//                    //query.where(getPredicates(condition1,condition2)); //这里可以设置任意条查询条件
+//                    //这种方式使用JPA的API设置了查询条件，所以不需要再返回查询条件Predicate给Spring Data Jpa，故最后return null
+//                    return null;
+//                }
+//            };
+//            Sort sort = new Sort(Sort.Direction.DESC, "addTime");
+//            Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
+//            Page<InviteServiceMissionView> enterpriseInfoPage = inviteServiceMissionViewDao.findAll(specification,pageable);
+//
+//            return new ResultCodeNew("0","",enterpriseInfoPage);
+//        }catch(Exception ex){
+//            ex.printStackTrace();
+//            return new ResultCode("00",ex.getMessage(),new ArrayList());
+//        }
+//    }
+
+
     /**
      * 条件查询信息 从发布任务查询
      * @param queryEntity
@@ -226,7 +313,7 @@ public class InviteServiceController {
      */
     @ApiOperation("条件查询信息 从发布任务查询")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = InviteServiceMissionView.class,include = "departmentName,postName,countNum,updateTime")
+    @JSON(type = InviteServiceMissionNewView.class,include = "departmentName,postName,countNum,updateTime,addTime")
     @RequestMapping(value="/findByConditionMissionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByConditionMissionAPI(@Validated @RequestBody InviteServiceQueryDto queryEntity, HttpServletRequest request) {
         try{
@@ -237,11 +324,11 @@ public class InviteServiceController {
             }
 
             //查询默认当天的费用记录
-            Specification<InviteServiceMissionView> specification=new Specification<InviteServiceMissionView>() {
+            Specification<InviteServiceMissionNewView> specification=new Specification<InviteServiceMissionNewView>() {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public Predicate toPredicate(Root<InviteServiceMissionView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+                public Predicate toPredicate(Root<InviteServiceMissionNewView> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
                     List<Predicate> predicates = new ArrayList<>();
                     List<Predicate> predicates_or = new ArrayList<>();
                     Predicate condition_tData = null;
@@ -265,19 +352,13 @@ public class InviteServiceController {
                         String EndTime = DateUtil.getLastDayOfMonth(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH)+1);
                         Date startDate = DateUtil.stringtoDate(StartTime + "-01 00:00:00", DateUtil.FORMAT_ONE);
                         Date endDate = DateUtil.stringtoDate(EndTime + " 23:59:59", DateUtil.FORMAT_ONE);
-                        predicates.add(criteriaBuilder.between(root.get("updateTime"), startDate,endDate));
+                        predicates.add(criteriaBuilder.between(root.get("addTime"), startDate,endDate));
                     }
 
 //                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
 //                    predicates.add(condition_tData);
-                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.SFYQR.getCode()));
-                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GYYQRWC.getCode()));
-                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.DPJ.getCode()));
-                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.YPJ.getCode()));
-                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GZYPJ.getCode()));
-                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GYYPJ.getCode()));
-                    predicates_or.add(criteriaBuilder.equal(root.get("missionRecordStatus"), MissionRecordStatu.GZYQRWC.getCode()));
 
+                    predicates.add(criteriaBuilder.equal(root.get("isAgencyPublished"), 1));
 
 
                     if(predicates_or.size() > 0){
@@ -293,7 +374,11 @@ public class InviteServiceController {
             };
             Sort sort = new Sort(Sort.Direction.DESC, "addTime");
             Pageable pageable = new PageRequest(queryEntity.getPage()-1, queryEntity.getPageSize(), sort);
-            Page<InviteServiceMissionView> enterpriseInfoPage = inviteServiceMissionViewDao.findAll(specification,pageable);
+            Page<InviteServiceMissionNewView> enterpriseInfoPage = inviteServiceMissionNewViewDao.findAll(specification,pageable);
+            List<InviteServiceMissionNewView> content = enterpriseInfoPage.getContent();
+            for (InviteServiceMissionNewView inviteServiceMissionNewView : content) {
+                inviteServiceMissionNewView.setCountNum(inviteServiceMissionNewView.getPersonCount());
+            }
 
             return new ResultCodeNew("0","",enterpriseInfoPage);
         }catch(Exception ex){
