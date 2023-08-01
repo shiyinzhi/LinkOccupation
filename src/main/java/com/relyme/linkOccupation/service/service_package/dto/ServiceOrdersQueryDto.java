@@ -24,6 +24,12 @@ public class ServiceOrdersQueryDto {
     @ApiModelProperty("查询条件")
     private String searStr;
 
+    /**
+     * 订单状态 0已失效 1已生效
+     */
+    @ApiModelProperty("订单状态 0已失效 1已生效")
+    private Integer orderStatus;
+
     public int getPage() {
         return page;
     }
@@ -46,5 +52,13 @@ public class ServiceOrdersQueryDto {
 
     public void setSearStr(String searStr) {
         this.searStr = searStr;
+    }
+
+    public Integer getOrderStatus() {
+        return orderStatus;
+    }
+
+    public void setOrderStatus(Integer orderStatus) {
+        this.orderStatus = orderStatus;
     }
 }

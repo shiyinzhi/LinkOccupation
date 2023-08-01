@@ -209,7 +209,7 @@ public class ServiceOrdersController {
      */
     @ApiOperation("条件查询信息")
     @JSON(type = PageImpl.class  , include="content,totalElements")
-    @JSON(type = ServiceOrdersView.class,notinclude = "sn,addTime,updateTime,active,page,pageSize,querySort,orderColumn,limit")
+    @JSON(type = ServiceOrdersView.class,notinclude = "sn,addTime,updateTime,page,pageSize,querySort,orderColumn,limit")
     @RequestMapping(value="/findByConditionAPI",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
     public Object findByConditionAPI(@Validated @RequestBody ServiceOrdersQueryDto queryEntity, HttpServletRequest request) {
         try{
@@ -236,8 +236,10 @@ public class ServiceOrdersController {
                         predicates_or.add(criteriaBuilder.like(root.get("servicePackageOrder"), "%"+queryEntity.getSearStr()+"%"));
                     }
 
-                    condition_tData = criteriaBuilder.equal(root.get("active"), 1);
-                    predicates.add(condition_tData);
+                    if(queryEntity.getOrderStatus() != null){
+                        condition_tData = criteriaBuilder.equal(root.get("active"), queryEntity.getOrderStatus());
+                        predicates.add(condition_tData);
+                    }
 
 
                     if(predicates_or.size() > 0){
@@ -716,6 +718,64 @@ public class ServiceOrdersController {
                 serviceOrders.setBackgroundDiscounts(queryEntity.getBackgroundDiscounts());
             }
             serviceOrdersDao.save(serviceOrders);
+
+            return new ResultCodeNew("0","",serviceOrders);
+        }catch(Exception ex){
+            ex.printStackTrace();
+            return new ResultCode("00",ex.getMessage(),new ArrayList());
+        }
+    }
+
+
+    /**
+     * 删除订单
+     * @param queryEntity
+     * @return
+     */
+    @ApiOperation("删除订单")
+    @JSON(type = PageImpl.class  , include="content,totalElements")
+    @JSON(type = ServiceOrders.class,include = "uuid")
+    @RequestMapping(value="/delServiceOrder",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Object delServiceOrder(@Validated @RequestBody ServiceOrderUuidDelDto queryEntity, HttpServletRequest request) {
+        try{
+
+            UserAccount userAccount = LoginBean.getUserAccount(request);
+            if(userAccount == null){
+                throw new Exception("请先登录！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getUuid())){
+                throw new Exception("服务订单uuid 不能为空！");
+            }
+
+            if(StringUtils.isEmpty(queryEntity.getRemark())){
+                throw new Exception("备注不能为空！");
+            }
+
+            ServiceOrders serviceOrders = serviceOrdersDao.findByUuid(queryEntity.getUuid());
+            if(serviceOrders == null){
+                throw new Exception("服务订单信息异常！");
+            }
+
+            //查询企业信息
+            EnterpriseInfo enterpriseInfo = enterpriseInfoDao.findByUuid(serviceOrders.getEnterpriseUuid());
+            if(enterpriseInfo == null){
+                throw new Exception("企业信息异常！");
+            }
+
+            serviceOrders.setActive(0);
+            serviceOrders.setIsBuyOffline(0);
+            serviceOrders.setRemark(queryEntity.getRemark());
+            serviceOrdersDao.saveAndFlush(serviceOrders);
+
+            enterpriseInfo.setIsVip(0);
+            enterpriseInfo.setServiceOrdersUuid(null);
+            enterpriseInfo.setServicePackageUuid(null);
+            enterpriseInfoDao.saveAndFlush(enterpriseInfo);
+
+            //更新企业服务状态信息
+            serviceStatusDao.updateServiceStatusUnActive(enterpriseInfo.getUuid());
+
 
             return new ResultCodeNew("0","",serviceOrders);
         }catch(Exception ex){
