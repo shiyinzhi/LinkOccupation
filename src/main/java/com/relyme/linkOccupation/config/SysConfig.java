@@ -20,10 +20,10 @@ public class SysConfig {
      */
 //    public static final String DOWNLOAD_PATH_BASE="https://www.beelinggong.com"+File.separator;
     @Value("${DOWNLOAD_PATH_BASE}")
-    private String DOWNLOAD_PATH_BASE="https://www.ctxthr.com"+File.separator;
+    private String DOWNLOAD_PATH_BASE;
 //    public static final String DOWNLOAD_PATH_BASE="http://localhost:9631"+File.separator;
 
-    private String DOWNLOAD_PATH_REPOSITORY = DOWNLOAD_PATH_BASE+SAVE_FILE_PATH;
+//    private String DOWNLOAD_PATH_REPOSITORY = getDOWNLOAD_PATH_BASE()+SAVE_FILE_PATH;
 //    public static final String DOWNLOAD_PATH_REPOSITORY = DOWNLOAD_PATH_BASE+"hematology/repository/repository"+File.separator;
 
     /**
@@ -36,14 +36,15 @@ public class SysConfig {
     }
 
     public String getDOWNLOAD_PATH_REPOSITORY() {
-        return DOWNLOAD_PATH_REPOSITORY;
+//        return DOWNLOAD_PATH_REPOSITORY;
+        return DOWNLOAD_PATH_BASE+SAVE_FILE_PATH;
     }
 
     /**
      * 平台标识
      */
     @Value("${PLATFORM_REMARK}")
-    private String platformRemark = "xx";
+    private String platformRemark;
 
     public String getPlatformRemark() {
         return platformRemark;
